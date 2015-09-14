@@ -1,21 +1,19 @@
 package handler
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // Handles HTTP requests to the Gone wiki.
-type Handler struct{}
+type Handler struct {
+	filer *Filer
+}
 
 // Initializes a zeroe'd instance ready to use.
 func NewHandler() *Handler {
-	return &Handler{}
+	return &Handler{NewFiler()}
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -33,65 +31,15 @@ func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request)
 }
 
 func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
-	path := "." + request.URL.Path
-	ok, err := isPathInsideWorkingDirectory(path)
+	var readCloser, err = h.filer.OpenReader(request)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
 		h.serveInternalServerError(writer, request)
 		return
 	}
-	if !ok {
-		log.Printf("%s %s: Not inside working directory", request.Method, request.URL)
-		h.serveNotFound(writer, request)
-		return
-	}
 
-	file, err := os.Open(path)
-	if err != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
-		h.serveNotFound(writer, request)
-		return
-	}
-
-	h.serveFromReader(file, writer, request)
-	file.Close()
-}
-
-func isPathInsideWorkingDirectory(path string) (bool, error) {
-	normalizedPath, err := normalizePath(path)
-	if err != nil {
-		return false, fmt.Errorf("checking %s inside wd: %s", path, err)
-	}
-
-	wdPath, err := os.Getwd()
-	if err != nil {
-		return false, fmt.Errorf("checking %s inside wd: %s", path, err)
-	}
-	normalizedWdPath, err := normalizePath(wdPath)
-	if err != nil {
-		return false, fmt.Errorf("checking %s inside wd: %s", path, err)
-	}
-
-	return strings.HasPrefix(normalizedPath, normalizedWdPath), nil
-}
-
-func normalizePath(path string) (string, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return path, fmt.Errorf("building abs path of %s: %s", path, err)
-	}
-
-	// TODO: Check whether existis
-
-	hardPath, err := filepath.EvalSymlinks(absPath)
-	if err != nil {
-		return path, fmt.Errorf("removing symlinks from %s: %s", absPath, err)
-	}
-
-	// HINT: Remove .. and ., remove trailing slash
-	cleanPath := filepath.Clean(hardPath)
-
-	return cleanPath, nil
+	h.serveFromReader(readCloser, writer, request)
+	readCloser.Close()
 }
 
 func (h *Handler) serveNotFound(writer http.ResponseWriter, request *http.Request) {
