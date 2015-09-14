@@ -1,5 +1,8 @@
+# gone
 
-# Ziele
+This is _Work In Progress_, the following information is only a raw sketch / a collection of ideas.
+
+## Ziele
 
 * KISS-Wiki
 * das sich im Dateisystem widerspiegelt
@@ -7,9 +10,9 @@
 * mit dem auch vorhandene Dokumentation wie Manpages angezeigt werden kann
 
 
-# Konzepte
+## Konzepte
 
-## Abbildung URL-Dateisystem
+### Abbildung URL-Dateisystem
 
 * URLs werden ins Dateisystem gematcht
 * Konfigurationsdatei regelt Abbildungen von URLs in Verzeichnisse
@@ -22,7 +25,7 @@
 * Query-Parameter erlauben in einen Schreib- oder Info-Modus zu wechseln
 * Später könnte es eine History automatisch für git-versionierte Verzeichnisse geben
 
-## Authentifizierung
+### Authentifizierung
 
 * HTTP-Basic-Auth <-> htpasswd?
 
