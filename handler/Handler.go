@@ -34,7 +34,11 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var readCloser, err = h.filer.OpenReader(request)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
-		h.serveInternalServerError(writer, request)
+		if isPathNotFoundError(err) {
+			h.serveNotFound(writer, request)
+		} else {
+			h.serveInternalServerError(writer, request)
+		}
 		return
 	}
 
