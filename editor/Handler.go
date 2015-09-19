@@ -38,10 +38,23 @@ func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request)
 }
 
 func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
-	var err = h.editTemplate.Execute(writer, "no data yet")
+	var data = make(map[string]string)
+	data["path"] = request.URL.Path
+	data["content"] = h.filer.ReadString(request)
+	if h.filer.Err() != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, h.filer.Err())
+		if filer.IsPathNotFoundError(h.filer.Err()) {
+			h.serveNotFound(writer, request)
+		} else {
+			h.serveInternalServerError(writer, request)
+		}
+		return
+	}
+
+	var err = h.editTemplate.Execute(writer, data)
 	if err != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		h.serveInternalServerError(writer, request)
-		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
 		return
 	}
 

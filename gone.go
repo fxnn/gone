@@ -14,7 +14,7 @@ import (
 
 func main() {
 	http.Handle("/view/", http.StripPrefix("/view", viewer.New()))
-	http.Handle("/edit/", must(editor.New()))
+	http.Handle("/edit/", http.StripPrefix("/edit", must(editor.New())))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

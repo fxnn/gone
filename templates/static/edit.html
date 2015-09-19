@@ -4,15 +4,49 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
+	<title>{{.path}}</title>
 
-<title>Conforming XHTML 1.0 Transitional Template</title>
+	<style type="text/css">
+		/* <![CDATA[ */
+		* {
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+			padding: 0; 
+			margin: 0; 
+		}
 
+		body {
+			margin: 10px;
+		}
+
+		.centre {
+			text-align: center;
+		}
+
+		textarea {  /* position is inherited */
+			left: 0; 
+			top: 0; 
+			right: 0;
+			bottom: 100px;
+			width: 100%;
+			padding: .7em;
+
+			font-family: Consolas, "Lucida Sans Typewriter", "Lucida Console", monaco, monospace;
+			font-size: 12pt;
+		}
+		/* ]]> */
+	</style>
 </head>
 
 <body>
-
-Hello, world!
-
+	<!-- http://stackoverflow.com/a/21591031 -->
+	<div class="center">
+		<form method="POST" action="{{.path}}">
+			<textarea name="content" rows="20">{{.content}}</textarea>
+			<input type="submit" value="Save" />
+		</form>
+	</div>
 </body>
 
 </html>

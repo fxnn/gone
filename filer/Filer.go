@@ -2,6 +2,7 @@ package filer
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -14,6 +15,26 @@ type Filer struct {
 // Initializes a zeroe'd instance ready to use.
 func New() Filer {
 	return Filer{}
+}
+
+// Returns the requested content as string.
+// A caller must always check the Err() method.
+func (f *Filer) ReadString(request *http.Request) string {
+	if f.err != nil {
+		return ""
+	}
+	return f.readAllAndClose(f.OpenReader(request))
+}
+
+// Reads everything into the given Reader until EOF and closes it.
+func (f *Filer) readAllAndClose(readCloser io.ReadCloser) (result string) {
+	if f.err != nil {
+		return ""
+	}
+	var buf []byte
+	buf, f.err = ioutil.ReadAll(readCloser)
+	readCloser.Close()
+	return string(buf)
 }
 
 // OpenReader opens a reader for the given request.
