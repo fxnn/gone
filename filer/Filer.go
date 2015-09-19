@@ -1,4 +1,4 @@
-package handler
+package filer
 
 import (
 	"fmt"
@@ -13,8 +13,8 @@ import (
 type Filer struct{}
 
 // Initializes a zeroe'd instance ready to use.
-func NewFiler() *Filer {
-	return &Filer{}
+func NewFiler() Filer {
+	return Filer{}
 }
 
 // Opens a reader for the given request. A caller must close the reader after

@@ -6,10 +6,10 @@
 package main
 
 import (
-	"github.com/fxnn/gone/handler"
+	"github.com/fxnn/gone/filer"
 	"net/http"
 )
 
 func main() {
-	http.ListenAndServe(":8080", handler.NewHandler())
+	http.ListenAndServe(":8080", filer.NewHandler())
 }

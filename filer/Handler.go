@@ -1,4 +1,4 @@
-package handler
+package filer
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 
 // Handles HTTP requests to the Gone wiki.
 type Handler struct {
-	filer *Filer
+	filer Filer
 }
 
 // Initializes a zeroe'd instance ready to use.

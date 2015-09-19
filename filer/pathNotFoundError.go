@@ -1,4 +1,4 @@
-package handler
+package filer
 
 type pathNotFoundError string
 
