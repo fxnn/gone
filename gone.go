@@ -6,10 +6,21 @@
 package main
 
 import (
+	"github.com/fxnn/gone/editor"
 	"github.com/fxnn/gone/filer"
+	"log"
 	"net/http"
 )
 
 func main() {
-	http.ListenAndServe(":8080", filer.NewHandler())
+	http.Handle("/view/", http.StripPrefix("/view", filer.NewHandler()))
+	http.Handle("/edit/", must(editor.NewHandler()))
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func must(handler http.Handler, err error) http.Handler {
+	if err != nil {
+		log.Panic(err)
+	}
+	return handler
 }

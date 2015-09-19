@@ -38,7 +38,7 @@ func (f *Filer) OpenReader(request *http.Request) (io.ReadCloser, error) {
 func (f *Filer) assertPathInsideWorkingDirectory(path string) error {
 	normalizedPath, err := f.normalizePath(path)
 	if err != nil {
-		if isPathNotFoundError(err) {
+		if IsPathNotFoundError(err) {
 			return err
 		}
 		return fmt.Errorf("checking %s inside wd: %s", path, err)
@@ -54,7 +54,7 @@ func (f *Filer) assertPathInsideWorkingDirectory(path string) error {
 	}
 
 	if !strings.HasPrefix(normalizedPath, normalizedWdPath) {
-		return newPathNotFoundError(fmt.Sprintf("%s is not inside working directory", path))
+		return NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", path))
 	}
 
 	return nil
@@ -67,7 +67,7 @@ func (f *Filer) normalizePath(path string) (string, error) {
 	}
 
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return path, newPathNotFoundError(err.Error())
+		return path, NewPathNotFoundError(err.Error())
 	}
 
 	hardPath, err := filepath.EvalSymlinks(absPath)
