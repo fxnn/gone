@@ -14,13 +14,13 @@ type Handler struct {
 }
 
 // Initializes a zeroe'd instance ready to use.
-func NewHandler() (*Handler, error) {
+func New() (*Handler, error) {
 	var editTemplate, err = loadEditTemplate()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Handler{filer.NewFiler(), editTemplate}, nil
+	return &Handler{filer.New(), editTemplate}, nil
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

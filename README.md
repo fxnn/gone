@@ -5,20 +5,28 @@ This is _Work In Progress_, the following information is only a raw sketch / a c
 
 ## Architecture
 
-          +--------+
-          | server |
-          +--------+
-           /      \
-          v        v
-    +-------+    +--------+
-    | filer |<---| editor |
-    +-------+    +--------+
+            +--------+
+            | server |
+            +--------+
+             /      \
+            v        v
+     +--------+    +--------+
+     | viewer |<---| editor |
+     +--------+    +--------+
+        |           /    |
+        |  +-------+     |
+        v  v             v
+    +-------+    +-----------+
+    | filer |    | templates |
+    +-------+    +-----------+
 
 The `server` is the HTTP Server component, using different handlers to serve
 requests.
-Handlers are currently implemented in the `filer` and the `editor` package.
-While the `editor` serves the editing UI, the `filer` is responsible for the
-basic _reading files, writing files_ stuff.
+Handlers are implemented in the `viewer` and the `editor` package.
+While the `editor` serves the editing UI, the `viewer` is responsible for 
+serving whatever file is requested.
+Both use the `filer` and `templates` as backend, which encapsulate reading and
+writing files from the filesystem, resp. templates delivered with `gone`.
 
 
 ## Ziele

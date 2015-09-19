@@ -1,6 +1,7 @@
-package filer
+package viewer
 
 import (
+	"github.com/fxnn/gone/filer"
 	"io"
 	"log"
 	"net/http"
@@ -9,12 +10,12 @@ import (
 // The `Handler` in this package serves HTTP requests with content from the
 // filesystem.
 type Handler struct {
-	filer Filer
+	filer filer.Filer
 }
 
 // Initializes a zeroe'd instance ready to use.
-func NewHandler() *Handler {
-	return &Handler{NewFiler()}
+func New() *Handler {
+	return &Handler{filer.New()}
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -35,7 +36,7 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var readCloser, err = h.filer.OpenReader(request)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
-		if IsPathNotFoundError(err) {
+		if filer.IsPathNotFoundError(err) {
 			h.serveNotFound(writer, request)
 		} else {
 			h.serveInternalServerError(writer, request)

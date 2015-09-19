@@ -13,7 +13,7 @@ import (
 type Filer struct{}
 
 // Initializes a zeroe'd instance ready to use.
-func NewFiler() Filer {
+func New() Filer {
 	return Filer{}
 }
 

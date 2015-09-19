@@ -7,14 +7,14 @@ package main
 
 import (
 	"github.com/fxnn/gone/editor"
-	"github.com/fxnn/gone/filer"
+	"github.com/fxnn/gone/viewer"
 	"log"
 	"net/http"
 )
 
 func main() {
-	http.Handle("/view/", http.StripPrefix("/view", filer.NewHandler()))
-	http.Handle("/edit/", must(editor.NewHandler()))
+	http.Handle("/view/", http.StripPrefix("/view", viewer.New()))
+	http.Handle("/edit/", must(editor.New()))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
