@@ -2,6 +2,25 @@
 
 This is _Work In Progress_, the following information is only a raw sketch / a collection of ideas.
 
+
+## Architecture
+
+          +--------+
+          | server |
+          +--------+
+           /      \
+          v        v
+    +-------+    +--------+
+    | filer |<---| editor |
+    +-------+    +--------+
+
+The `server` is the HTTP Server component, using different handlers to serve
+requests.
+Handlers are currently implemented in the `filer` and the `editor` package.
+While the `editor` serves the editing UI, the `filer` is responsible for the
+basic _reading files, writing files_ stuff.
+
+
 ## Ziele
 
 * KISS-Wiki
