@@ -26,6 +26,15 @@ func (f *Filer) ReadString(request *http.Request) string {
 	return f.readAllAndClose(f.OpenReader(request))
 }
 
+// Writes the given content into a file pointed to by the request.
+// A caller must always check the Err() method.
+func (f *Filer) WriteString(request *http.Request, content string) {
+	if f.err != nil {
+		return
+	}
+	f.writeAllAndClose(f.OpenWriter(request), content)
+}
+
 // Reads everything into the given Reader until EOF and closes it.
 func (f *Filer) readAllAndClose(readCloser io.ReadCloser) (result string) {
 	if f.err != nil {
@@ -37,14 +46,24 @@ func (f *Filer) readAllAndClose(readCloser io.ReadCloser) (result string) {
 	return string(buf)
 }
 
+// Writes the given string into the given Writer and closes it.
+func (f *Filer) writeAllAndClose(writeCloser io.WriteCloser, content string) {
+	if f.err != nil {
+		return
+	}
+	_, f.err = io.WriteString(writeCloser, content)
+	writeCloser.Close()
+}
+
 // OpenReader opens a reader for the given request.
 // A caller must close the reader after using it.
 // Also, he must always check the Err() method.
 func (f *Filer) OpenReader(request *http.Request) io.ReadCloser {
-	var path = "." + request.URL.Path
+	return f.openReaderAtPath(f.pathFromRequest(request))
+}
 
-	f.assertPathInsideWorkingDirectory(path)
-	return f.openReaderAtPath(path)
+func (f *Filer) OpenWriter(request *http.Request) io.WriteCloser {
+	return f.openWriterAtPath(f.pathFromRequest(request))
 }
 
 func (f *Filer) openReaderAtPath(path string) (reader io.ReadCloser) {
@@ -53,4 +72,18 @@ func (f *Filer) openReaderAtPath(path string) (reader io.ReadCloser) {
 	}
 	reader, f.err = os.Open(path)
 	return
+}
+
+func (f *Filer) openWriterAtPath(path string) (writer io.WriteCloser) {
+	if f.err != nil {
+		return nil
+	}
+	writer, f.err = os.Create(path)
+	return
+}
+
+func (f *Filer) pathFromRequest(request *http.Request) string {
+	var path = "." + request.URL.Path
+	f.assertPathInsideWorkingDirectory(path)
+	return path
 }

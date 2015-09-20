@@ -40,11 +40,13 @@
 </head>
 
 <body>
-	<!-- http://stackoverflow.com/a/21591031 -->
+	<!-- basic layout from http://stackoverflow.com/a/21591031 -->
 	<div class="center">
 		<form method="POST" action="{{.path}}">
+			<input type="hidden" name="edit" value="edit" />
 			<textarea name="content" rows="20">{{.content}}</textarea>
-			<input type="submit" value="Save" />
+			<input type="submit" name="save" value="Save" />
+			<input type="submit" name="saveAndReturn" value="Save and Return" />
 		</form>
 	</div>
 </body>
