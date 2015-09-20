@@ -14,9 +14,12 @@ type basicFiler struct {
 	err error
 }
 
-// Never forget to check for errors
+// Never forget to check for errors.
+// One call to this function resets the error state.
 func (f *basicFiler) Err() error {
-	return f.err
+	var result = f.err
+	f.err = nil
+	return result
 }
 
 func (f *basicFiler) assertPathInsideWorkingDirectory(path string) {

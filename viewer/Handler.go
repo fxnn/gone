@@ -34,9 +34,9 @@ func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request)
 
 func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var readCloser = h.filer.OpenReader(request)
-	if h.filer.Err() != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, h.filer.Err())
-		if filer.IsPathNotFoundError(h.filer.Err()) {
+	if err := h.filer.Err(); err != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
+		if filer.IsPathNotFoundError(err) {
 			h.serveNotFound(writer, request)
 		} else {
 			h.serveInternalServerError(writer, request)
@@ -56,7 +56,7 @@ func (h *Handler) serveNotFound(writer http.ResponseWriter, request *http.Reques
 func (h *Handler) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
 	written, err := io.Copy(writer, reader)
 	if err != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, err.Error())
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		h.serveInternalServerError(writer, request)
 		return
 	}

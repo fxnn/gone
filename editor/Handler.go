@@ -17,8 +17,8 @@ type Handler struct {
 // Initializes a zeroe'd instance ready to use.
 func New() Handler {
 	var template = templates.LoadEditorTemplate()
-	if template.Err() != nil {
-		panic(template.Err())
+	if err := template.Err(); err != nil {
+		panic(err)
 	}
 
 	return Handler{filer.New(), template}
@@ -40,9 +40,9 @@ func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request)
 
 func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var content = h.filer.ReadString(request)
-	if h.filer.Err() != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, h.filer.Err())
-		if filer.IsPathNotFoundError(h.filer.Err()) {
+	if err := h.filer.Err(); err != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
+		if filer.IsPathNotFoundError(err) {
 			h.serveNotFound(writer, request)
 		} else {
 			h.serveInternalServerError(writer, request)
@@ -51,8 +51,8 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	h.template.Render(writer, request.URL, content)
-	if h.template.Err() != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, h.template.Err())
+	if err := h.template.Err(); err != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		h.serveInternalServerError(writer, request)
 		return
 	}
