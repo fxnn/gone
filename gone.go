@@ -7,20 +7,16 @@ package main
 
 import (
 	"github.com/fxnn/gone/editor"
+	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
 	"log"
 	"net/http"
 )
 
 func main() {
-	http.Handle("/view/", http.StripPrefix("/view", viewer.New()))
-	http.Handle("/edit/", http.StripPrefix("/edit", must(editor.New())))
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
+	var viewer = viewer.New()
+	var editor = editor.New()
+	var router = router.New(&viewer, &editor)
 
-func must(handler http.Handler, err error) http.Handler {
-	if err != nil {
-		log.Panic(err)
-	}
-	return handler
+	log.Fatal(http.ListenAndServe(":8080", &router))
 }

@@ -14,8 +14,8 @@ type Handler struct {
 }
 
 // Initializes a zeroe'd instance ready to use.
-func New() *Handler {
-	return &Handler{filer.New()}
+func New() Handler {
+	return Handler{filer.New()}
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
