@@ -1,4 +1,4 @@
-package templates
+package resources
 
 import (
 	"bytes"
@@ -186,32 +186,8 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
-	"/.edit.html.swp": {
-		local:   ".edit.html.swp",
-		size:    12288,
-		modtime: 1442683616,
-		compressed: `
-H4sIAAAJbogA/+yaTW/cRBjHp0gVqpoAKlyRJkYIiLBnvaFNs/VGSpOiFqU0kA2kqoo0a8+uR7E9lj0b
-bxItHKCIb4DEF+DOBa70iMSJG+LEmRM3Dkj8Z3azvKhqbhSk+Uk/zavHzzMzOUTrfuu9W7fpatAm4DlC
-fvji972b3z94+uELhMSqSFRFziQ7LOtw9Yrfvuqv+eHllSARiYy5FkmQqlqLUaVKESTkw+mCrFHVQV3y
-WLChYnUVs6HU6agfxCpng3FRoLsQTIu8zLBIzWrNtYwZFtVBqvPs7IgcDsffGOmBf3WRrLTDlmm+5C3R
-5y/tPemoHA6Hw+FwOBwOx7+ILs+Rj1A+NWu/MSvP/aN0OBwOh8PhcDgcDofD8f+FJ4R0LxLy2gKxv/+f
-/v//7bOEfAofwLtwH74DV+EV+CK8CM/Dn58h5CH8En4OP4OfwI/hMZRQwATuww3YhRG8BM/D3xYJ+QX+
-CL+D38Cv4QfwLfgm7MAWfBW+Ain8FXH/BL+CGm7D67AD2zBcmOa2uPAkd9nhcDgcDofD4fhvEZ0JM5/e
-rmMm66vkaJ1ciFgiD1GiMlBVbmoXIlmUI031USm6Xj3q51J79JBnIzR3+aHwKJvO02KseSU4LXiOsVgV
-WhSYW6mm7nrtlrd+chLMeieTiJ3Ot+8zr6O50KlKut7Ond2eR3mspSq6Hp4quU4nE89EiABpnPEaS8ZY
-SFS2d8n3aap12WHm0+L4QB2KapCpxn6AzFk7vLwWtlZC6vvrJJomi6xTwRObda2PMmHiYMv0/v11usxQ
-n5isBojXr+Wx6NCwXepr874Bz2V21KGbqqgV4nmdetujWCac7vKipj1sV1NJE9+fI9O5Aj25KnisbKns
-d9PXiFm55Ekii2GHBqsit+9qZKJTvLvVetm2+0prlduOcmx7KjlMdYe2bEOr0lSpqWdioE8b87M5oRQ5
-lqqWZnOprKksUmECTUzWp2mb+T7P5LDo0Ok2m+UDU60EPZnPy3k1lIUJZxqN2dpHDM8imqc3a/fV2Oyt
-7eqrKhGVjy6biJ+rY/9x443oH0j9mCnLiMMeaLR0b3Nro7dxzx5rZM96dp1Nmiyua9whjGipcQvm1w03
-1HaQaHpPUOLPhY7zrMDlm922pmmCZiVQ1ZCFa2trbGzmmOUeMaH37nQ4ZFu9rVnV1xWuiz0MngWJTvBs
-tLR1Z7N3d+cGtS/c2bu+fWuTej5j769sMvMw3b/Zu71Nw6BFe395nrEbb3vkjwAAAP//IzQ4mAAwAAA=
-`,
-	},
-
 	"/edit.html": {
-		local:   "edit.html",
+		local:   "resources/static/edit.html",
 		size:    983,
 		modtime: 1442683616,
 		compressed: `
@@ -230,6 +206,6 @@ LLUi5lY0Gzo+iK1kwL0e7gQ5vZwEO9fBrbNPH8ws/hEAAP//8+j85dcDAAA=
 
 	"/": {
 		isDir: true,
-		local: "/",
+		local: "resources/static",
 	},
 }

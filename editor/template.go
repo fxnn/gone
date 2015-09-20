@@ -2,7 +2,7 @@ package editor
 
 import (
 	"fmt"
-	"github.com/fxnn/gone/templates"
+	"github.com/fxnn/gone/resources"
 	"html/template"
 	"io"
 )
@@ -15,7 +15,7 @@ type editTemplate struct {
 }
 
 func loadEditTemplate() (editTemplate, error) {
-	templateString, err := templates.FSString(useLocalEditTemplate, editTemplateName)
+	templateString, err := resources.FSString(useLocalEditTemplate, editTemplateName)
 	if err != nil {
 		return editTemplate{nil}, fmt.Errorf("couldnt load template %s: %s", editTemplateName, err)
 	}

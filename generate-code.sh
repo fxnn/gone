@@ -1,4 +1,5 @@
 #!/bin/bash
-cd templates/static
-esc -pkg templates -o ../templates.go .
-cd - >/dev/null
+
+# cf. https://github.com/mjibson/esc
+esc -prefix resources/static -pkg resources -o resources/resources.go resources/static
+
