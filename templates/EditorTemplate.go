@@ -19,7 +19,7 @@ func LoadEditorTemplate() EditorTemplate {
 }
 
 func (t *EditorTemplate) Render(writer io.Writer, url *url.URL, content string) {
-	if t.Err() != nil {
+	if t.err != nil {
 		return
 	}
 

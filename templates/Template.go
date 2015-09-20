@@ -31,8 +31,10 @@ func newWithError(err error) Template {
 // Err() gibt Fehler zurück, die beim Laden oder Rendern des Templates
 // auftraten.
 // Muss nach jeder Operation ausgefüht werden.
-func (t Template) Err() error {
-	return t.err
+func (t *Template) Err() error {
+	var result = t.err
+	t.err = nil
+	return result
 }
 
 func loadHtmlTemplate(name string) Template {
