@@ -11,11 +11,11 @@ This is _Work In Progress_, the following information is only a raw sketch / a c
              /      \
             v        v
      +--------+    +--------+
-     | viewer |<---| editor |
+     | viewer |    | editor |
      +--------+    +--------+
-        |           /    |
-        |  +-------+     |
-        v  v             v
+       |            /    |
+       |   +-------+     |
+       v   v             v
     +-------+    +-----------+
     | filer |    | templates |
     +-------+    +-----------+
@@ -25,8 +25,12 @@ requests.
 Handlers are implemented in the `viewer` and the `editor` package.
 While the `editor` serves the editing UI, the `viewer` is responsible for 
 serving whatever file is requested.
-Both use the `filer` and `templates` as backend, which encapsulate reading and
-writing files from the filesystem, resp. templates delivered with `gone`.
+
+Both use a set of backend packages.
+On the one hand this is `filer`, which encapsulate reading and writing files
+from the filesystem.
+On the other hand there is the `templates` package, which caches and renders
+the templates used for HTML output.
 
 
 ## Ziele
