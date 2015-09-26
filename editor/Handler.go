@@ -1,9 +1,9 @@
 package editor
 
 import (
+	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/templates"
-	"io"
 	"log"
 	"net/http"
 )
@@ -36,21 +36,21 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("%s %s: method not allowed", request.Method, request.URL)
-	h.serveMethodNotAllowed(writer, request)
+	failer.ServeMethodNotAllowed(writer, request)
 }
 
 func (h *Handler) servePOST(writer http.ResponseWriter, request *http.Request) {
 	var content = request.FormValue("content")
 	if content == "" {
 		log.Printf("%s %s: no valid content in request", request.Method, request.URL)
-		h.serveBadRequest(writer, request)
+		failer.ServeBadRequest(writer, request)
 		return
 	}
 
 	h.filer.WriteString(request, content)
 	if err := h.filer.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
-		h.serveInternalServerError(writer, request)
+		failer.ServeInternalServerError(writer, request)
 		return
 	}
 	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, len(content))
@@ -68,9 +68,9 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	if err := h.filer.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		if filer.IsPathNotFoundError(err) {
-			h.serveNotFound(writer, request)
+			failer.ServeNotFound(writer, request)
 		} else {
-			h.serveInternalServerError(writer, request)
+			failer.ServeInternalServerError(writer, request)
 		}
 		return
 	}
@@ -78,31 +78,11 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	h.template.Render(writer, request.URL, content)
 	if err := h.template.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
-		h.serveInternalServerError(writer, request)
+		failer.ServeInternalServerError(writer, request)
 		return
 	}
 
 	log.Printf("%s %s: served from template", request.Method, request.URL)
-}
-
-func (h *Handler) serveNotFound(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusNotFound)
-	io.WriteString(writer, "Oops, file not found")
-}
-
-func (h *Handler) serveInternalServerError(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusInternalServerError)
-	io.WriteString(writer, "Oops, internal server error")
-}
-
-func (h *Handler) serveBadRequest(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusBadRequest)
-	io.WriteString(writer, "Sorry, bad request")
-}
-
-func (h *Handler) serveMethodNotAllowed(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusMethodNotAllowed)
-	io.WriteString(writer, "Oops, method not allowed")
 }
 
 func (h *Handler) redirect(writer http.ResponseWriter, request *http.Request, location string) {

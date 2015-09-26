@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/fxnn/gone/failer"
+	"log"
 	"net/http"
 )
 
@@ -16,7 +18,8 @@ func New(viewer http.Handler, editor http.Handler) Handler {
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var err = request.ParseForm()
 	if err != nil {
-		// TODO Error checking
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
+		failer.ServeBadRequest(writer, request)
 		return
 	}
 	if _, ok := request.Form["edit"]; ok {

@@ -1,6 +1,7 @@
 package viewer
 
 import (
+	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
 	"io"
 	"log"
@@ -28,8 +29,7 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusMethodNotAllowed)
-	io.WriteString(writer, "Oops, method not allowed")
+	failer.ServeMethodNotAllowed(writer, request)
 }
 
 func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
@@ -37,9 +37,9 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	if err := h.filer.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		if filer.IsPathNotFoundError(err) {
-			h.serveNotFound(writer, request)
+			failer.ServeNotFound(writer, request)
 		} else {
-			h.serveInternalServerError(writer, request)
+			failer.ServeInternalServerError(writer, request)
 		}
 		return
 	}
@@ -48,23 +48,13 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 	readCloser.Close()
 }
 
-func (h *Handler) serveNotFound(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusNotFound)
-	io.WriteString(writer, "Oops, file not found")
-}
-
 func (h *Handler) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
 	written, err := io.Copy(writer, reader)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
-		h.serveInternalServerError(writer, request)
+		failer.ServeInternalServerError(writer, request)
 		return
 	}
 
 	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, written)
-}
-
-func (h *Handler) serveInternalServerError(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusInternalServerError)
-	io.WriteString(writer, "Oops, internal server error")
 }
