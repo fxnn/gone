@@ -1,6 +1,7 @@
 # gone
 
 [![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
+[![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
 
 Gone is a wiki written in go. It's
 
