@@ -1,6 +1,19 @@
 # gone
 
-This is _Work In Progress_, the following information is only a raw sketch / a collection of ideas.
+Gone is a wiki written in go. It's
+
+* KISS,
+* Convention over Configuration and
+* designed with sysadmins in mind.
+
+It might someday display plain text, markdown, godoc, manpages etc.
+Files of unknown type are provided for download.
+Plaintext files might be edited.
+
+For permissions, the file system's access control is used as far as possible.
+You can define user groups that must have read/write permission for anonymous/authorized access.
+Authentication is configured in a good old `htpasswd` file.
+Additional groups for authorized users might be supplied in a `htgroup` file.
 
 
 ## Architecture
@@ -31,32 +44,4 @@ On the one hand this is `filer`, which encapsulate reading and writing files
 from the filesystem.
 On the other hand there is the `templates` package, which caches and renders
 the templates used for HTML output.
-
-
-## Ziele
-
-* KISS-Wiki
-* das sich im Dateisystem widerspiegelt
-* mit dem auch Konfigurationsdateien angezeigt werden können
-* mit dem auch vorhandene Dokumentation wie Manpages angezeigt werden kann
-
-
-## Konzepte
-
-### Abbildung URL-Dateisystem
-
-* URLs werden ins Dateisystem gematcht
-* Konfigurationsdatei regelt Abbildungen von URLs in Verzeichnisse
-* Konfigurierbare Input-Pipeline und Output-Pipeline je Dateityp, d.h.
-  * ich kann etwa einen Markdown-HTML-Parser installieren,
-  * einen Text-HTML-Renderer oder auch
-  * einen Manpage-HTML-Renderer.
-  * Die Output-Pipeline regelt, wie der vom User eingegebene Text in die Datei umgewandelt wird.
-  * Ohne Konfiguration keine Möglichkeit, den Dateitypen zu speichern/lesen.
-* Query-Parameter erlauben in einen Schreib- oder Info-Modus zu wechseln
-* Später könnte es eine History automatisch für git-versionierte Verzeichnisse geben
-
-### Authentifizierung
-
-* HTTP-Basic-Auth <-> htpasswd?
 
