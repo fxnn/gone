@@ -19,6 +19,14 @@ Authentication is configured in a good old `htpasswd` file.
 Additional groups for authorized users might be supplied in a `htgroup` file.
 
 
+## Usage
+
+Simply start the application.
+The current working directory will now be served on port `8080`.
+Append `?edit` to the URL to edit the content.
+Append `?create` to the URL to create a non-existant file.
+
+
 ## Architecture
 
             +--------+
