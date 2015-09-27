@@ -3,6 +3,7 @@ package filer
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -22,16 +23,23 @@ func (f *basicFiler) Err() error {
 	return result
 }
 
-func (f *basicFiler) assertPathInsideWorkingDirectory(path string) {
+func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {
 	if f.err != nil {
 		return
 	}
 
-	var normalizedPath = f.normalizePath(path)
+	var normalizedPath = f.normalizePath(p)
 	var wdPath = f.normalizePath(f.workingDirectory())
 
 	if f.err == nil && !strings.HasPrefix(normalizedPath, wdPath) {
-		f.err = NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", path))
+		f.err = NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", p))
+	} else if f.err != nil {
+		var oldErr = f.err
+		f.err = nil
+		f.assertPathInsideWorkingDirectory(path.Dir(p))
+		if f.err != nil {
+			f.err = oldErr
+		}
 	}
 }
 

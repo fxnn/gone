@@ -3,9 +3,11 @@ package editor
 import (
 	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
+	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/templates"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 // The Editor is a HTTP Handler that serves the editor UI.
@@ -59,22 +61,28 @@ func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
 	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, len(content))
 
 	if request.FormValue("saveAndReturn") != "" {
-		e.redirect(writer, request, request.URL.Path)
+		e.redirect(writer, request, router.ToModeView(request.URL))
 		return
 	}
 
-	e.redirect(writer, request, request.URL.Path+"?edit")
+	e.redirect(writer, request, router.ToModeEdit(request.URL))
 }
 
 func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var content = e.filer.ReadString(request)
 	if err := e.filer.Err(); err != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, err)
-		if filer.IsPathNotFoundError(err) {
-			failer.ServeNotFound(writer, request)
-		} else {
+		if !filer.IsPathNotFoundError(err) {
+			log.Printf("%s %s: %s", request.Method, request.URL, err)
 			failer.ServeInternalServerError(writer, request)
+			return
+		} else if router.IsModeEdit(request) {
+			log.Printf("%s %s: file to be edited does not exist: %s", request.Method, request.URL, err)
+			failer.ServeNotFound(writer, request)
+			return
 		}
+	} else if router.IsModeCreate(request) {
+		log.Printf("%s %s: file to be created already exists: %s", request.Method, request.URL, err)
+		failer.ServeConflict(writer, request)
 		return
 	}
 
@@ -88,6 +96,6 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 	log.Printf("%s %s: served from template", request.Method, request.URL)
 }
 
-func (e *Editor) redirect(writer http.ResponseWriter, request *http.Request, location string) {
-	http.Redirect(writer, request, location, http.StatusFound)
+func (e *Editor) redirect(writer http.ResponseWriter, request *http.Request, location *url.URL) {
+	http.Redirect(writer, request, location.String(), http.StatusFound)
 }

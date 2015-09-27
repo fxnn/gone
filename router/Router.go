@@ -22,7 +22,7 @@ func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		failer.ServeBadRequest(writer, request)
 		return
 	}
-	if _, ok := request.Form["edit"]; ok {
+	if IsModeEdit(request) || IsModeCreate(request) {
 		r.editor.ServeHTTP(writer, request)
 		return
 	}

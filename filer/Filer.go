@@ -1,6 +1,7 @@
 package filer
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -71,6 +72,7 @@ func (f *Filer) openReaderAtPath(path string) (reader io.ReadCloser) {
 		return nil
 	}
 	reader, f.err = os.Open(path)
+	f.wrapErr()
 	return
 }
 
@@ -79,6 +81,7 @@ func (f *Filer) openWriterAtPath(path string) (writer io.WriteCloser) {
 		return nil
 	}
 	writer, f.err = os.Create(path)
+	f.wrapErr()
 	return
 }
 
@@ -86,4 +89,15 @@ func (f *Filer) pathFromRequest(request *http.Request) string {
 	var path = "." + request.URL.Path
 	f.assertPathInsideWorkingDirectory(path)
 	return path
+}
+
+// Wraps f.err to a filer-specific error, if possible
+func (f *Filer) wrapErr() {
+	if f.err != nil && os.IsNotExist(f.err) {
+		if pathError, ok := f.err.(*os.PathError); ok {
+			f.err = NewPathNotFoundError("path not found: " + pathError.Path)
+		} else {
+			f.err = NewPathNotFoundError(fmt.Sprintf("path not found: %s", f.err))
+		}
+	}
 }

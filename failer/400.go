@@ -8,6 +8,7 @@ var (
 	BadRequestHandler       = newFailer("Oops, bad request", http.StatusBadRequest)
 	NotFoundHandler         = newFailer("Sorry, not found", http.StatusNotFound)
 	MethodNotAllowedHandler = newFailer("Oops, method not allowed", http.StatusMethodNotAllowed)
+	ConflictHandler         = newFailer("Sorry, there's a conflict", http.StatusConflict)
 )
 
 func ServeBadRequest(writer http.ResponseWriter, request *http.Request) {
@@ -20,4 +21,8 @@ func ServeNotFound(writer http.ResponseWriter, request *http.Request) {
 
 func ServeMethodNotAllowed(writer http.ResponseWriter, request *http.Request) {
 	MethodNotAllowedHandler.ServeHTTP(writer, request)
+}
+
+func ServeConflict(writer http.ResponseWriter, request *http.Request) {
+	ConflictHandler.ServeHTTP(writer, request)
 }
