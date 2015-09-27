@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type Router struct {
 	editor http.Handler
 	viewer http.Handler
 }
 
-func New(viewer http.Handler, editor http.Handler) Handler {
-	return Handler{editor, viewer}
+func New(viewer http.Handler, editor http.Handler) Router {
+	return Router{editor, viewer}
 }
 
-func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var err = request.ParseForm()
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
@@ -23,8 +23,8 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if _, ok := request.Form["edit"]; ok {
-		h.editor.ServeHTTP(writer, request)
+		r.editor.ServeHTTP(writer, request)
 		return
 	}
-	h.viewer.ServeHTTP(writer, request)
+	r.viewer.ServeHTTP(writer, request)
 }

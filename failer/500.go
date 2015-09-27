@@ -5,10 +5,10 @@ import (
 )
 
 var (
-	InternalServerErrorHandler = handler{
+	InternalServerErrorHandler = newFailer(
 		"Oops, internal server error",
 		http.StatusInternalServerError,
-	}
+	)
 )
 
 func ServeInternalServerError(writer http.ResponseWriter, request *http.Request) {

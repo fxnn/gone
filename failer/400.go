@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	BadRequestHandler       = handler{"Oops, bad request", http.StatusBadRequest}
-	NotFoundHandler         = handler{"Sorry, not found", http.StatusNotFound}
-	MethodNotAllowedHandler = handler{"Oops, method not allowed", http.StatusMethodNotAllowed}
+	BadRequestHandler       = newFailer("Oops, bad request", http.StatusBadRequest)
+	NotFoundHandler         = newFailer("Sorry, not found", http.StatusNotFound)
+	MethodNotAllowedHandler = newFailer("Oops, method not allowed", http.StatusMethodNotAllowed)
 )
 
 func ServeBadRequest(writer http.ResponseWriter, request *http.Request) {

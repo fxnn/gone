@@ -8,33 +8,32 @@ import (
 	"net/http"
 )
 
-// The `Handler` in this package serves HTTP requests with content from the
-// filesystem.
-type Handler struct {
+// The Viewer serves HTTP requests with content from the filesystem.
+type Viewer struct {
 	filer filer.Filer
 }
 
 // Initializes a zeroe'd instance ready to use.
-func New() Handler {
-	return Handler{filer.New()}
+func New() Viewer {
+	return Viewer{filer.New()}
 }
 
-func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (v *Viewer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
-		h.serveNonGET(writer, request)
+		v.serveNonGET(writer, request)
 		return
 	}
 
-	h.serveGET(writer, request)
+	v.serveGET(writer, request)
 }
 
-func (h *Handler) serveNonGET(writer http.ResponseWriter, request *http.Request) {
+func (v *Viewer) serveNonGET(writer http.ResponseWriter, request *http.Request) {
 	failer.ServeMethodNotAllowed(writer, request)
 }
 
-func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
-	var readCloser = h.filer.OpenReader(request)
-	if err := h.filer.Err(); err != nil {
+func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
+	var readCloser = v.filer.OpenReader(request)
+	if err := v.filer.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		if filer.IsPathNotFoundError(err) {
 			failer.ServeNotFound(writer, request)
@@ -44,11 +43,11 @@ func (h *Handler) serveGET(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	h.serveFromReader(readCloser, writer, request)
+	v.serveFromReader(readCloser, writer, request)
 	readCloser.Close()
 }
 
-func (h *Handler) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
+func (v *Viewer) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
 	written, err := io.Copy(writer, reader)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
