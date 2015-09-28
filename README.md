@@ -29,30 +29,33 @@ Append `?create` to the URL to create a non-existant file.
 
 ## Architecture
 
-            +--------+
-            | server |
-            +--------+
-             /      \
-            v        v
-     +--------+    +--------+
-     | viewer |    | editor |
-     +--------+    +--------+
-       |            /    |
-       |   +-------+     |
-       v   v             v
+                    +------+
+                    | main |
+                    +------+
+                    /   |  \
+          +--------+    |   +--------+
+          v             v            v
+     +--------+    +--------+    +--------+
+     | viewer |    | editor |    | router |
+     +--------+    +--------+    +--------+
+       |            /   |
+       |   +-------+    |
+       v   v            v
     +-------+    +-----------+
     | filer |    | templates |
     +-------+    +-----------+
 
-The `server` is the HTTP Server component, using different handlers to serve
+`main` implements the HTTP Server component, using different handlers to serve
 requests.
+The `router` component directs each request to the matching handler.
 Handlers are implemented in the `viewer` and the `editor` package.
 While the `editor` serves the editing UI, the `viewer` is responsible for 
 serving whatever file is requested.
 
 Both use a set of backend packages.
-On the one hand this is `filer`, which encapsulate reading and writing files
-from the filesystem.
-On the other hand there is the `templates` package, which caches and renders
-the templates used for HTML output.
+* The `filer` encapsulate reading and writing files from the filesystem.
+* The `templates` package caches and renders the templates used for HTML output.
+* The `resources` package encapsulates access to static resources, which are
+  bundled with each `gone` distribution.
+* The `failer` package delivers error pages for HTTP requests.
 
