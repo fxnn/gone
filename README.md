@@ -11,9 +11,6 @@ Files of unknown type are provided for download.
 Plaintext files might be edited.
 
 For permissions, the file system's access control is used as far as possible.
-You can define user groups that must have read/write permission for anonymous/authorized access.
-Authentication is configured in a good old `htpasswd` file.
-Additional groups for authorized users might be supplied in a `htgroup` file.
 
 [![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
 [![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
@@ -58,4 +55,29 @@ Both use a set of backend packages.
 * The `resources` package encapsulates access to static resources, which are
   bundled with each `gone` distribution.
 * The `failer` package delivers error pages for HTTP requests.
+
+
+## Access Control
+
+Users being not logged in have read and write permissions according to the
+world access permissions of the file or containing directory.
+This means, a file with `rwxrwx---` cannot be read or written by an
+unauthenticated user.
+
+### Currently unimplemented
+
+Users can login.
+The login information is configured in a good old `htpasswd` file.
+
+By default, authenticated users can read and write all files that are readable
+resp. writeable by the `gone` process.
+
+Additionally, you can define user groups that must have read/write permissions
+for anonymous/authenticated access.
+Additional groups for authorized users might be supplied in a `htgroup` file.
+
+For example, you can demand that access permissions for unauthenticated users
+are only granted if the file has the `public` group.
+You could also demand that authenticated users do not have additional rights,
+unless they are granted special groups via `htgroup`.
 
