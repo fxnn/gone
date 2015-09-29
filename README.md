@@ -1,8 +1,5 @@
 # gone
 
-[![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
-[![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
-
 Gone is a wiki written in go. It's
 
 * KISS,
@@ -17,6 +14,9 @@ For permissions, the file system's access control is used as far as possible.
 You can define user groups that must have read/write permission for anonymous/authorized access.
 Authentication is configured in a good old `htpasswd` file.
 Additional groups for authorized users might be supplied in a `htgroup` file.
+
+[![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
+[![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
 
 
 ## Usage
