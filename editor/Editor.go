@@ -30,6 +30,12 @@ func New() Editor {
 }
 
 func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if !e.filer.HasWriteAccessForRequest(request) {
+		log.Printf("%s %s: no write permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
 	if request.Method == "POST" {
 		e.servePOST(writer, request)
 		return

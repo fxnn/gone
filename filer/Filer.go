@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 )
 
 // Maps incoming HTTP requests to the file system.
@@ -67,28 +68,58 @@ func (f *Filer) OpenWriter(request *http.Request) io.WriteCloser {
 	return f.openWriterAtPath(f.pathFromRequest(request))
 }
 
-func (f *Filer) openReaderAtPath(path string) (reader io.ReadCloser) {
+func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
 	if f.err != nil {
 		return nil
 	}
-	reader, f.err = os.Open(path)
+	reader, f.err = os.Open(p)
 	f.wrapErr()
 	return
 }
 
-func (f *Filer) openWriterAtPath(path string) (writer io.WriteCloser) {
+func (f *Filer) openWriterAtPath(p string) (writer io.WriteCloser) {
 	if f.err != nil {
 		return nil
 	}
-	writer, f.err = os.Create(path)
+	if !f.hasWriteAccessToPath(p) {
+		f.err = NewAccessDeniedError(fmt.Sprintf("Access denied on %s", p))
+		return nil
+	}
+	writer, f.err = os.Create(p)
 	f.wrapErr()
 	return
 }
 
 func (f *Filer) pathFromRequest(request *http.Request) string {
-	var path = "." + request.URL.Path
-	f.assertPathInsideWorkingDirectory(path)
-	return path
+	var p = "." + request.URL.Path
+	f.assertPathInsideWorkingDirectory(p)
+	return p
+}
+
+func (f *Filer) HasWriteAccessForRequest(request *http.Request) bool {
+	return f.hasWriteAccessToPath(f.pathFromRequest(request))
+}
+
+func (f *Filer) hasWriteAccessToPath(p string) bool {
+	if f.err != nil {
+		return false
+	}
+	info, err := os.Stat(p)
+	if err != nil && os.IsNotExist(err) {
+		// HINT: Inspect permissions of containing directory
+		info, err = os.Stat(path.Dir(p))
+	}
+	if err != nil {
+		f.err = err
+		f.wrapErr()
+		return false
+	}
+	return f.hasWriteAccessForFileMode(info.Mode())
+}
+
+func (f *Filer) hasWriteAccessForFileMode(mode os.FileMode) bool {
+	// 0002 is the write permission write for others
+	return mode&0002 != 0
 }
 
 // Wraps f.err to a filer-specific error, if possible

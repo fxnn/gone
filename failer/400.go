@@ -6,6 +6,7 @@ import (
 
 var (
 	BadRequestHandler       = newFailer("Oops, bad request", http.StatusBadRequest)
+	UnauthorizedHandler     = newFailer("Oops, unauthorized", http.StatusUnauthorized)
 	NotFoundHandler         = newFailer("Sorry, not found", http.StatusNotFound)
 	MethodNotAllowedHandler = newFailer("Oops, method not allowed", http.StatusMethodNotAllowed)
 	ConflictHandler         = newFailer("Sorry, there's a conflict", http.StatusConflict)
@@ -13,6 +14,10 @@ var (
 
 func ServeBadRequest(writer http.ResponseWriter, request *http.Request) {
 	BadRequestHandler.ServeHTTP(writer, request)
+}
+
+func ServeUnauthorized(writer http.ResponseWriter, request *http.Request) {
+	UnauthorizedHandler.ServeHTTP(writer, request)
 }
 
 func ServeNotFound(writer http.ResponseWriter, request *http.Request) {
