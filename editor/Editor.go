@@ -41,6 +41,12 @@ func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if !e.filer.HasReadAccessForRequest(request) {
+		log.Printf("%s %s: no read permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
 	if request.Method == "GET" {
 		e.serveGET(writer, request)
 		return
