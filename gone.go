@@ -11,15 +11,17 @@ import (
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/editor"
+	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
 )
 
 func main() {
-	var viewer = viewer.New()
-	var editor = editor.New()
-	var authenticator = authenticator.New()
-	var router = router.New(&viewer, &editor, &authenticator)
+	var authenticator = authenticator.NewHttpBasicAuthenticator()
+	var filer = filer.New(authenticator)
+	var viewer = viewer.New(filer)
+	var editor = editor.New(filer)
+	var router = router.New(viewer, editor, authenticator)
 
 	log.Fatal(http.ListenAndServe(":8080", &router))
 }

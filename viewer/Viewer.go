@@ -10,12 +10,12 @@ import (
 
 // The Viewer serves HTTP requests with content from the filesystem.
 type Viewer struct {
-	filer filer.Filer
+	filer *filer.Filer
 }
 
-// Initializes a zeroe'd instance ready to use.
-func New() Viewer {
-	return Viewer{filer.New()}
+// New initializes a Viewer instance ready to use.
+func New(filer *filer.Filer) *Viewer {
+	return &Viewer{filer}
 }
 
 func (v *Viewer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

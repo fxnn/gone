@@ -5,11 +5,42 @@ import (
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/fxnn/gone/authenticator"
 )
 
 // Maps incoming HTTP requests to the file system.
 type accessControl struct {
+	authenticator authenticator.Authenticator
 	basicFiler
+}
+
+func newAccessControl(authenticator authenticator.Authenticator) accessControl {
+	return accessControl{authenticator, newBasicFiler()}
+}
+
+func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
+	if a.err != nil {
+		return
+	}
+	if a.authenticator.IsAuthenticated(request) {
+		return
+	}
+	if !a.HasWriteAccessForRequest(request) {
+		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
+	}
+}
+
+func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
+	if a.err != nil {
+		return
+	}
+	if a.authenticator.IsAuthenticated(request) {
+		return
+	}
+	if !a.HasReadAccessForRequest(request) {
+		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
+	}
 }
 
 func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
@@ -18,18 +49,6 @@ func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
 
 func (a *accessControl) HasReadAccessForRequest(request *http.Request) bool {
 	return a.hasReadAccessToPath(a.pathFromRequest(request))
-}
-
-func (a *accessControl) assertHasWriteAccessToPath(p string) {
-	if a.err == nil && !a.hasWriteAccessToPath(p) {
-		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", p)))
-	}
-}
-
-func (a *accessControl) assertHasReadAccessToPath(p string) {
-	if a.err == nil && !a.hasReadAccessToPath(p) {
-		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", p)))
-	}
 }
 
 func (a *accessControl) hasWriteAccessToPath(p string) bool {

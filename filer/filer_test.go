@@ -1,37 +1,38 @@
 package filer
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/fxnn/gone/authenticator"
 )
 
 func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
 	tmpdir := createTempDirInCurrentwd(t, 0772)
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
-	sut := New()
+	sut := New(authenticator.NewNeverAuthenticated())
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpdir + "/newFile"))
+	closed(writeCloser)
 	if err := sut.Err(); err != nil {
 		t.Fatalf("failed to open file for writing: %s", err)
 	}
-
-	writeCloser.Close()
 }
 
 func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
-	sut := New()
+	sut := New(authenticator.NewNeverAuthenticated())
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpfile))
-	err := sut.Err()
-	if err == nil || !IsAccessDeniedError(err) {
-		writeCloser.Close()
+	closed(writeCloser)
+	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }
@@ -40,13 +41,25 @@ func TestOpenReaderDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
-	sut := New()
+	sut := New(authenticator.NewNeverAuthenticated())
 
 	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
-	err := sut.Err()
-	if err == nil || !IsAccessDeniedError(err) {
-		readCloser.Close()
+	closed(readCloser)
+	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
+	}
+}
+
+func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
+	tmpfile := createTempFileInCurrentwd(t, 0770)
+	defer removeTempFileFromCurrentwd(t, tmpfile)
+
+	sut := New(authenticator.NewAlwaysAuthenticated())
+
+	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
+	closed(readCloser)
+	if err := sut.Err(); err != nil {
+		t.Fatalf("failed to open %s for reading: %s", tmpfile, err)
 	}
 }
 
@@ -113,4 +126,10 @@ func getwd(t *testing.T) string {
 		t.Fatalf("couldnt get working directory: %s", err)
 	}
 	return wd
+}
+
+func closed(c io.Closer) {
+	if c != nil {
+		c.Close()
+	}
 }

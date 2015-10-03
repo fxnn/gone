@@ -16,6 +16,10 @@ type basicFiler struct {
 	err error
 }
 
+func newBasicFiler() basicFiler {
+	return basicFiler{nil}
+}
+
 // Never forget to check for errors.
 // One call to this function resets the error state.
 func (f *basicFiler) Err() error {

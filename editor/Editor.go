@@ -14,19 +14,19 @@ import (
 // While the UI itself is implemented in a HTML template, this type
 // implements the logic behind the UI.
 type Editor struct {
-	filer    filer.Filer
+	filer    *filer.Filer
 	template templates.EditorTemplate
 }
 
 // Initializes a new instance ready to use.
 // The instance includes a loaded and parsed template.
-func New() Editor {
+func New(filer *filer.Filer) *Editor {
 	var template = templates.LoadEditorTemplate()
 	if err := template.Err(); err != nil {
 		panic(err)
 	}
 
-	return Editor{filer.New(), template}
+	return &Editor{filer, template}
 }
 
 func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/fxnn/gone/authenticator"
 )
 
 // Maps incoming HTTP requests to the file system.
@@ -13,8 +15,8 @@ type Filer struct {
 }
 
 // Initializes a zeroe'd instance ready to use.
-func New() Filer {
-	return Filer{}
+func New(authenticator authenticator.Authenticator) *Filer {
+	return &Filer{newAccessControl(authenticator)}
 }
 
 // Returns the requested content as string.
@@ -61,15 +63,22 @@ func (f *Filer) writeAllAndClose(writeCloser io.WriteCloser, content string) {
 // A caller must close the reader after using it.
 // Also, he must always check the Err() method.
 func (f *Filer) OpenReader(request *http.Request) io.ReadCloser {
+	f.assertHasReadAccessForRequest(request)
+	if f.err != nil {
+		return nil
+	}
 	return f.openReaderAtPath(f.pathFromRequest(request))
 }
 
 func (f *Filer) OpenWriter(request *http.Request) io.WriteCloser {
+	f.assertHasWriteAccessForRequest(request)
+	if f.err != nil {
+		return nil
+	}
 	return f.openWriterAtPath(f.pathFromRequest(request))
 }
 
 func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
-	f.assertHasReadAccessToPath(p)
 	if f.err != nil {
 		return nil
 	}
@@ -79,7 +88,6 @@ func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
 }
 
 func (f *Filer) openWriterAtPath(p string) (writer io.WriteCloser) {
-	f.assertHasWriteAccessToPath(p)
 	if f.err != nil {
 		return nil
 	}
