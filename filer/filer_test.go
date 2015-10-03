@@ -9,7 +9,7 @@ import (
 )
 
 func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
-	tmpdir := createTempDirInCurrentwd(t, 0777)
+	tmpdir := createTempDirInCurrentwd(t, 0772)
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
 	sut := New()
@@ -32,6 +32,20 @@ func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	err := sut.Err()
 	if err == nil || !IsAccessDeniedError(err) {
 		writeCloser.Close()
+		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
+	}
+}
+
+func TestOpenReaderDeniesWhenWorldPermissionIsMissing(t *testing.T) {
+	tmpfile := createTempFileInCurrentwd(t, 0770)
+	defer removeTempFileFromCurrentwd(t, tmpfile)
+
+	sut := New()
+
+	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
+	err := sut.Err()
+	if err == nil || !IsAccessDeniedError(err) {
+		readCloser.Close()
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }

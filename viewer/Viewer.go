@@ -19,6 +19,12 @@ func New() Viewer {
 }
 
 func (v *Viewer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if !v.filer.HasReadAccessForRequest(request) {
+		log.Printf("%s %s: no read permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
 	if request.Method != "GET" {
 		v.serveNonGET(writer, request)
 		return

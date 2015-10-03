@@ -69,6 +69,7 @@ func (f *Filer) OpenWriter(request *http.Request) io.WriteCloser {
 }
 
 func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
+	f.assertHasReadAccessToPath(p)
 	if f.err != nil {
 		return nil
 	}
