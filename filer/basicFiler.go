@@ -2,6 +2,7 @@ package filer
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,6 +24,27 @@ func (f *basicFiler) Err() error {
 	return result
 }
 
+func (f *basicFiler) setErr(err error) {
+	f.err = wrapErr(err)
+}
+
+// Wraps f.err to a filer-specific error, if possible
+func wrapErr(err error) error {
+	if os.IsNotExist(err) {
+		if pathError, ok := err.(*os.PathError); ok {
+			return NewPathNotFoundError("path not found: " + pathError.Path)
+		}
+		return NewPathNotFoundError(fmt.Sprintf("path not found: %s", err))
+	}
+	return err
+}
+
+func (f *basicFiler) pathFromRequest(request *http.Request) string {
+	var p = "." + request.URL.Path
+	f.assertPathInsideWorkingDirectory(p)
+	return p
+}
+
 func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {
 	if f.err != nil {
 		return
@@ -32,7 +54,7 @@ func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {
 	var wdPath = f.normalizePath(f.workingDirectory())
 
 	if f.err == nil && !strings.HasPrefix(normalizedPath, wdPath) {
-		f.err = NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", p))
+		f.setErr(NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", p)))
 	} else if f.err != nil {
 		var oldErr = f.err
 		f.err = nil
@@ -63,7 +85,8 @@ func (f *basicFiler) absPath(path string) (absPath string) {
 	if f.err != nil {
 		return path
 	}
-	absPath, f.err = filepath.Abs(path)
+	absPath, err := filepath.Abs(path)
+	f.setErr(err)
 	return
 }
 
@@ -72,7 +95,7 @@ func (f *basicFiler) assertPathExists(path string) {
 		return
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		f.err = NewPathNotFoundError(err.Error())
+		f.setErr(NewPathNotFoundError(err.Error()))
 	}
 }
 
@@ -80,7 +103,8 @@ func (f *basicFiler) evalSymlinks(path string) (hardPath string) {
 	if f.err != nil {
 		return path
 	}
-	hardPath, f.err = filepath.EvalSymlinks(path)
+	hardPath, err := filepath.EvalSymlinks(path)
+	f.setErr(err)
 	return
 }
 
@@ -95,6 +119,7 @@ func (f *basicFiler) workingDirectory() (wd string) {
 	if f.err != nil {
 		return ""
 	}
-	wd, f.err = os.Getwd()
+	wd, err := os.Getwd()
+	f.setErr(err)
 	return
 }
