@@ -6,17 +6,20 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
+	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/editor"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
-	"log"
-	"net/http"
 )
 
 func main() {
 	var viewer = viewer.New()
 	var editor = editor.New()
-	var router = router.New(&viewer, &editor)
+	var authenticator = authenticator.New()
+	var router = router.New(&viewer, &editor, &authenticator)
 
 	log.Fatal(http.ListenAndServe(":8080", &router))
 }

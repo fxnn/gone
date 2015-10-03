@@ -1,13 +1,13 @@
 package editor
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/templates"
-	"log"
-	"net/http"
-	"net/url"
 )
 
 // The Editor is a HTTP Handler that serves the editor UI.
@@ -73,11 +73,11 @@ func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
 	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, len(content))
 
 	if request.FormValue("saveAndReturn") != "" {
-		e.redirect(writer, request, router.ToModeView(request.URL))
+		router.RedirectToViewMode(writer, request)
 		return
 	}
 
-	e.redirect(writer, request, router.ToModeEdit(request.URL))
+	router.RedirectToEditMode(writer, request)
 }
 
 func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
@@ -106,8 +106,4 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("%s %s: served from template", request.Method, request.URL)
-}
-
-func (e *Editor) redirect(writer http.ResponseWriter, request *http.Request, location *url.URL) {
-	http.Redirect(writer, request, location.String(), http.StatusFound)
 }
