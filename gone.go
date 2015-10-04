@@ -26,7 +26,7 @@ func main() {
 	var editor = editor.New(filer)
 	var router = router.New(viewer, editor, authenticator)
 
-	var handlerChain = context.ClearHandler(router)
+	var handlerChain = context.ClearHandler(authenticator.AuthHandler(router))
 
 	log.Fatal(http.ListenAndServe(":8080", handlerChain))
 }

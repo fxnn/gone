@@ -23,9 +23,6 @@ func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
 	if a.err != nil {
 		return
 	}
-	if a.authenticator.IsAuthenticated(request) {
-		return
-	}
 	if !a.HasWriteAccessForRequest(request) {
 		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
 	}
@@ -35,19 +32,22 @@ func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
 	if a.err != nil {
 		return
 	}
-	if a.authenticator.IsAuthenticated(request) {
-		return
-	}
 	if !a.HasReadAccessForRequest(request) {
 		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
 	}
 }
 
 func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
+	if a.authenticator.IsAuthenticated(request) {
+		return true
+	}
 	return a.hasWriteAccessToPath(a.pathFromRequest(request))
 }
 
 func (a *accessControl) HasReadAccessForRequest(request *http.Request) bool {
+	if a.authenticator.IsAuthenticated(request) {
+		return true
+	}
 	return a.hasReadAccessToPath(a.pathFromRequest(request))
 }
 

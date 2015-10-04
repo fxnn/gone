@@ -18,7 +18,9 @@ type Context struct {
 func Load(request *http.Request) Context {
 	var result = Context{}
 	if val, ok := context.GetOk(request, userIdKey); ok {
-		result.UserId = val.(string)
+		if strVal, ok := val.(string); ok {
+			result.UserId = strVal
+		}
 	}
 	return result
 }
