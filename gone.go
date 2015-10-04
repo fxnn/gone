@@ -14,14 +14,19 @@ import (
 	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
+
+	"github.com/gorilla/context"
 )
 
 func main() {
 	var authenticator = authenticator.NewHttpBasicAuthenticator()
 	var filer = filer.New(authenticator)
+
 	var viewer = viewer.New(filer)
 	var editor = editor.New(filer)
 	var router = router.New(viewer, editor, authenticator)
 
-	log.Fatal(http.ListenAndServe(":8080", &router))
+	var handlerChain = context.ClearHandler(router)
+
+	log.Fatal(http.ListenAndServe(":8080", handlerChain))
 }

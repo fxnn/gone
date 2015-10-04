@@ -11,3 +11,7 @@ func NewAlwaysAuthenticated() *AlwaysAuthenticated {
 func (AlwaysAuthenticated) IsAuthenticated(request *http.Request) bool {
 	return true
 }
+
+func (AlwaysAuthenticated) UserId(request *http.Request) string {
+	return ""
+}

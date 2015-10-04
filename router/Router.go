@@ -12,8 +12,8 @@ type Router struct {
 	authenticator http.Handler
 }
 
-func New(viewer http.Handler, editor http.Handler, authenticator http.Handler) Router {
-	return Router{editor, viewer, authenticator}
+func New(viewer http.Handler, editor http.Handler, authenticator http.Handler) *Router {
+	return &Router{editor, viewer, authenticator}
 }
 
 func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

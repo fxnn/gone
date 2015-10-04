@@ -1,17 +1,18 @@
 package authenticator
 
 import (
-	"github.com/abbot/go-http-auth"
-	"github.com/fxnn/gone/router"
+	"log"
 	"net/http"
+
+	"github.com/abbot/go-http-auth"
+	"github.com/fxnn/gone/context"
+	"github.com/fxnn/gone/router"
 )
 
 const (
 	authenticationRealmName = "gone wiki"
 )
 
-// Authenticator provides UI and algorithms to allow an user to
-// authenticate.
 type HttpBasicAuthenticator struct {
 	authenticationHandler *auth.BasicAuth
 }
@@ -21,7 +22,10 @@ func NewHttpBasicAuthenticator() *HttpBasicAuthenticator {
 }
 
 func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	a.checkAuth(request)
+
 	if a.IsAuthenticated(request) {
+		log.Printf("%s %s: authenticated as %s", request.Method, request.URL, a.UserId(request))
 		router.RedirectToViewMode(writer, request)
 		return
 	}
@@ -30,7 +34,17 @@ func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *
 }
 
 func (a *HttpBasicAuthenticator) IsAuthenticated(request *http.Request) bool {
-	return a.authenticationHandler.CheckAuth(request) != ""
+	return context.Load(request).IsAuthenticated()
+}
+
+func (a *HttpBasicAuthenticator) UserId(request *http.Request) string {
+	return context.Load(request).UserId
+}
+
+func (a *HttpBasicAuthenticator) checkAuth(request *http.Request) {
+	var ctx = context.Load(request)
+	ctx.UserId = a.authenticationHandler.CheckAuth(request)
+	ctx.Save(request)
 }
 
 func provideSampleSecret(user, realm string) string {

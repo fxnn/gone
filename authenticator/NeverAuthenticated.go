@@ -11,3 +11,7 @@ func NewNeverAuthenticated() *NeverAuthenticated {
 func (NeverAuthenticated) IsAuthenticated(request *http.Request) bool {
 	return false
 }
+
+func (NeverAuthenticated) UserId(request *http.Request) string {
+	return ""
+}
