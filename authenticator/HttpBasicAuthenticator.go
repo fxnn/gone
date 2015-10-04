@@ -30,6 +30,8 @@ func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if userId, ok := a.authenticationStore.userId(request); ok {
 			a.setUserId(request, userId)
+		} else {
+			a.authenticationStore.clearUserId(writer, request)
 		}
 
 		delegate.ServeHTTP(writer, request)

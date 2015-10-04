@@ -11,6 +11,7 @@ import (
 const (
 	authenticationStoreSessionName       = "goneAuthenticationStore"
 	cookieAuthenticationKeyLengthInBytes = 64
+	cookieMaxAgeInSeconds                = 60 * 60
 )
 
 type cookieAuthenticationStore struct {
@@ -18,7 +19,9 @@ type cookieAuthenticationStore struct {
 }
 
 func newCookieAuthenticationStore() cookieAuthenticationStore {
-	return cookieAuthenticationStore{createCookieStoreWithRandomKey()}
+	var cookieStore = createCookieStoreWithRandomKey()
+	cookieStore.MaxAge(cookieMaxAgeInSeconds)
+	return cookieAuthenticationStore{cookieStore}
 }
 
 func createCookieStoreWithRandomKey() *sessions.CookieStore {
@@ -51,6 +54,14 @@ func (s *cookieAuthenticationStore) setUserId(
 	session.Values["userId"] = userId
 	if err := s.cookieStore.Save(request, writer, session); err != nil {
 		log.Printf("%s %s: failed to store userid in cookie", request.Method, request.URL)
+	}
+}
+
+func (s *cookieAuthenticationStore) clearUserId(writer http.ResponseWriter, request *http.Request) {
+	var session = s.session(request)
+	session.Options.MaxAge = -1
+	if err := s.cookieStore.Save(request, writer, session); err != nil {
+		log.Printf("%s %s: failed to clear cookie", request.Method, request.URL)
 	}
 }
 
