@@ -1,0 +1,41 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/abbot/go-http-auth",
+			"revision": "fa194fe927580ca87aae2e747412dd39eafee1e8",
+			"revisionTime": "2015-09-23T00:49:25+01:00"
+		},
+		{
+			"path": "github.com/gorilla/context",
+			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
+			"revisionTime": "2015-08-19T22:12:45-07:00"
+		},
+		{
+			"path": "github.com/gorilla/securecookie",
+			"revision": "e95799a481bbcc3d01c2ad5178524cb8bec9f370",
+			"revisionTime": "2015-08-20T16:29:58+08:00"
+		},
+		{
+			"path": "github.com/gorilla/sessions",
+			"revision": "f7261893ca3ea922c30eabe742c036d2c1de6e0a",
+			"revisionTime": "2015-10-02T21:59:52+08:00"
+		},
+		{
+			"path": "golang.org/x/crypto/bcrypt",
+			"revision": "0c93e1ff9f91f0c63bf17b123de503d023434fdd",
+			"revisionTime": "2015-08-29T15:53:49-07:00"
+		},
+		{
+			"path": "golang.org/x/crypto/blowfish",
+			"revision": "0c93e1ff9f91f0c63bf17b123de503d023434fdd",
+			"revisionTime": "2015-08-29T15:53:49-07:00"
+		},
+		{
+			"path": "golang.org/x/net/context",
+			"revision": "01256db42e5106196a3473ec1620727a383500e8",
+			"revisionTime": "2015-10-02T11:57:39+10:00"
+		}
+	]
+}
