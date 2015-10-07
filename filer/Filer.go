@@ -3,8 +3,10 @@ package filer
 import (
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/fxnn/gone/authenticator"
 )
@@ -94,4 +96,20 @@ func (f *Filer) openWriterAtPath(p string) (writer io.WriteCloser) {
 	writer, err := os.Create(p)
 	f.setErr(err)
 	return
+}
+
+func (f *Filer) MimeTypeForRequest(request *http.Request) string {
+	if f.err != nil {
+		return ""
+	}
+	return f.mimeTypeForPath(f.pathFromRequest(request))
+}
+
+func (f *Filer) mimeTypeForPath(p string) string {
+	if f.err != nil {
+		return ""
+	}
+	var ext = path.Ext(p)
+	return mime.TypeByExtension(ext)
+	// TODO: Also use DetectContentType
 }

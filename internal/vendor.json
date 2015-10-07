@@ -23,6 +23,16 @@
 			"revisionTime": "2015-10-02T21:59:52+08:00"
 		},
 		{
+			"path": "github.com/russross/blackfriday",
+			"revision": "93ae1e873a88e44ac18bb7d9d9bd69ef77802471",
+			"revisionTime": "2015-05-26T11:24:09+03:00"
+		},
+		{
+			"path": "github.com/shurcooL/sanitized_anchor_name",
+			"revision": "11a20b799bf22a02808c862eb6ca09f7fb38f84a",
+			"revisionTime": "2015-05-14T17:27:06-07:00"
+		},
+		{
 			"path": "golang.org/x/crypto/bcrypt",
 			"revision": "0c93e1ff9f91f0c63bf17b123de503d023434fdd",
 			"revisionTime": "2015-08-29T15:53:49-07:00"

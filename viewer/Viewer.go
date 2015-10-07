@@ -3,7 +3,6 @@ package viewer
 import (
 	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
-	"io"
 	"log"
 	"net/http"
 )
@@ -38,6 +37,9 @@ func (v *Viewer) serveNonGET(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
+	var mimeType = v.filer.MimeTypeForRequest(request)
+	var formatter = mimeTypeFormatter(mimeType)
+
 	var readCloser = v.filer.OpenReader(request)
 	if err := v.filer.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
@@ -49,17 +51,6 @@ func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	v.serveFromReader(readCloser, writer, request)
+	formatter.serveFromReader(readCloser, writer, request)
 	readCloser.Close()
-}
-
-func (v *Viewer) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
-	written, err := io.Copy(writer, reader)
-	if err != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, err)
-		failer.ServeInternalServerError(writer, request)
-		return
-	}
-
-	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, written)
 }
