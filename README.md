@@ -4,7 +4,7 @@ Gone is a wiki written in [Go](http://golang.org). It's
 
 * KISS,
 * Convention over Configuration and
-* designed with sysadmins in mind.
+* designed with Developers and Admins in mind.
 
 It displays Markdown, HTML and Plaintext straight from the filesystem.
 It allows you to edit just anything that has MIME type `text/*`.
@@ -34,7 +34,7 @@ Likewise, an anonymous user being not logged in can't read or write files throug
 For example, a file `rw-r--r--` might be read by an anonymous user, but he won't be able to change that file.
 Also, in a directory `rwxr-xr-x`, only a user being logged in may create new files.
 
-### Currently unimplemented
+### Currently unimplemented access control features
 
 Users can login.
 The login information is configured in a good old `htpasswd` file.
@@ -42,14 +42,15 @@ The login information is configured in a good old `htpasswd` file.
 By default, authenticated users can read and write all files that are readable
 resp. writeable by the Gone process.
 
-Additionally, you can define user groups that must have read/write permissions
-for anonymous/authenticated access.
-Additional groups for authorized users might be supplied in a `htgroup` file.
 
-For example, you can demand that access permissions for unauthenticated users
-are only granted if the file has the `public` group.
-You could also demand that authenticated users do not have additional rights,
-unless they are granted special groups via `htgroup`.
+## Future
+
+Some day, Gone might be able to
+* use external programs to render files into HTML, which would allow you to display manpages or syntax-highlighted code right in the web browser.
+* use customized templates, so that you can change the appereance of the wiki just be editing some Go HTML template files.
+* support OpenID authentication.
+* respect each files / directories group attribute for access control, in combination with a `htgroup` file.
+* incorporate Git as version control system.
 
 
 ## Development
