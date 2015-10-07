@@ -1,4 +1,5 @@
-// The `editor` package serves the editor UI.
+// The editor package serves the editor UI.
 // It allows users to edit wiki files.
-// The read/write functionality is not implemented in this package.
+// Therein, it depends on more basic services like reading or writing files,
+// access control, templating etc., which are implemented in other packages.
 package editor
