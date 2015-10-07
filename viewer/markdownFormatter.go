@@ -8,34 +8,30 @@ import (
 
 	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/internal/github.com/russross/blackfriday"
+	"github.com/fxnn/gone/templates"
 )
 
 const markdownFormatterOutputMimeType = "text/html"
 
-type markdownFormatter struct{}
+type markdownFormatter struct {
+	template templates.ViewerTemplate
+}
 
 func newMarkdownFormatter() markdownFormatter {
 	// TODO: Preinitialize Markdown Renderer
-	return markdownFormatter{}
+	return markdownFormatter{templates.LoadViewerTemplate()}
 }
 
 func (f markdownFormatter) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", markdownFormatterOutputMimeType)
 
-	var (
-		markdown []byte
-		written  int
-		err      error
-	)
-
-	markdown, err = ioutil.ReadAll(reader)
+	markdown, err := ioutil.ReadAll(reader)
 	if err == nil {
-		written, err = writer.Write(blackfriday.MarkdownCommon(markdown))
-	}
-	if err != nil {
+		html := blackfriday.MarkdownCommon(markdown)
+		f.template.Render(writer, request.URL, string(html))
+		log.Printf("%s %s: delivered markdown page", request.Method, request.URL)
+	} else {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)
-		return
 	}
-	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, written)
 }
