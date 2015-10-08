@@ -63,9 +63,63 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 	}
 }
 
+func TestAccessToParentDirDenied(t *testing.T) {
+	tempFile := createTempFileInCurrentwd(t, 0777)
+	tempWdName := createTempWdInCurrentwd(t, 0777)
+	defer removeTempWdFromCurrentwd(t, tempWdName)
+	defer removeTempFileFromCurrentwd(t, tempFile)
+
+	sut := New(authenticator.NewAlwaysAuthenticated())
+
+	readCloser := sut.OpenReader(requestGET("/../" + tempFile))
+	closed(readCloser)
+	if err := sut.Err(); err == nil {
+		t.Fatalf("could open reader for parent dir of working directory %s", getwd(t))
+	} else if !IsPathNotFoundError(err) {
+		t.Fatalf("expected PathNotFoundError: %s", err)
+	}
+}
+
+func TestAccessToSymlinkToParentDirAllowed(t *testing.T) {
+	tempFile := createTempFileInCurrentwd(t, 0777)
+	tempWdName := createTempWdInCurrentwd(t, 0777)
+	symlinkName := createTempSymlinkInCurrentwd(t, "../"+tempFile)
+	defer removeTempSymlinkFromCurrentwd(t, symlinkName)
+	defer removeTempWdFromCurrentwd(t, tempWdName)
+	defer removeTempFileFromCurrentwd(t, tempFile)
+
+	sut := New(authenticator.NewAlwaysAuthenticated())
+
+	readCloser := sut.OpenReader(requestGET("/" + symlinkName))
+	closed(readCloser)
+	if err := sut.Err(); err != nil {
+		t.Fatalf("could open reader for symlink to file %s from wd %s: %s", tempFile, getwd(t), err)
+	}
+}
+
 func requestGET(path string) (request *http.Request) {
 	request, _ = http.NewRequest("GET", path, nil)
 	return
+}
+
+func createTempSymlinkInCurrentwd(t *testing.T, target string) string {
+	wd := getwd(t)
+	symlinkName := path.Base(target) // let's use the same name
+	symlink := path.Join(wd, symlinkName)
+	if err := os.Symlink(target, symlink); err != nil {
+		t.Fatalf("couldnt create symlink %s to %s: %s", symlink, target, err)
+	}
+	return symlinkName
+}
+
+func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
+	wd := getwd(t)
+	tempDirName := createTempDirInCurrentwd(t, mode)
+	tempWd := path.Join(wd, tempDirName)
+	if err := os.Chdir(tempWd); err != nil {
+		t.Fatalf("couldnt change wd to %s: %s", tempWd, err)
+	}
+	return tempDirName
 }
 
 func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
@@ -100,6 +154,18 @@ func createTempFileInCurrentwd(t *testing.T, mode os.FileMode) string {
 		t.Fatalf("couldn close tmpfile %s: %s", info.Name(), err)
 	}
 	return info.Name()
+}
+
+func removeTempSymlinkFromCurrentwd(t *testing.T, symlinkName string) {
+	removeTempFileFromCurrentwd(t, symlinkName)
+}
+
+func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
+	newwd := path.Dir(getwd(t))
+	if err := os.Chdir(newwd); err != nil {
+		t.Fatalf("couldnt chdir to %s: %s", newwd, err)
+	}
+	removeTempDirFromCurrentwd(t, tmpdir)
 }
 
 func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {

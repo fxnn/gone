@@ -69,6 +69,8 @@ func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {
 	}
 }
 
+// Builds an absolute path and cleans it from ".." and ".", but doesn't resolve
+// symlinks
 func (f *basicFiler) normalizePath(path string) string {
 	if f.err != nil {
 		return path
@@ -77,9 +79,7 @@ func (f *basicFiler) normalizePath(path string) string {
 	var result string
 
 	result = f.absPath(path)
-
 	f.assertPathExists(result)
-	result = f.evalSymlinks(result)
 
 	// HINT: Remove .. and ., remove trailing slash
 	return f.cleanPath(result)
