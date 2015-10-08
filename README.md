@@ -23,15 +23,18 @@ For example, the file `test.md` in that working directory is now accessible as `
 Append `?edit` to the URL to edit the content.
 Append `?create` to the URL to create a non-existant file.
 
+While no one will be able to access the outside of the working directory (e.g. by using `/../breakout`),
+it _is_ possible to access symlinks to anywhere in the file system.
+
 
 ## Access Control
 
 Gone uses the file system's access control features.
 Of course, the Gone process can't read or write files it doesn't have a permission to.
-For example, if the Gone process is run by user `joe`, it won't be able to read a file only user `ann` has read permission for (as with `rw-r-----`).
+For example, if the Gone process is run by user `joe`, it won't be able to read a file only user `ann` has read permission for (as with `rw-------`).
 
 Likewise, an anonymous user being not logged in can't read or write files through Gone, except those who have _world_ permissions.
-For example, a file `rw-r--r--` might be read by an anonymous user, but he won't be able to change that file.
+For example, a file `rw-rw-r--` might be read by an anonymous user, but he won't be able to change that file.
 Also, in a directory `rwxr-xr-x`, only a user being logged in may create new files.
 
 ### Currently unimplemented access control features
