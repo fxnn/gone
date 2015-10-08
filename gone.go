@@ -19,8 +19,7 @@ import (
 )
 
 func main() {
-	var authenticator = authenticator.NewHttpBasicAuthenticator()
-	var filer = filer.New(authenticator)
+	var filer, authenticator = filerAndAuthenticator()
 
 	var viewer = viewer.New(filer)
 	var editor = editor.New(filer)
@@ -29,4 +28,17 @@ func main() {
 	var handlerChain = context.ClearHandler(authenticator.AuthHandler(router))
 
 	log.Fatal(http.ListenAndServe(":8080", handlerChain))
+}
+
+func filerAndAuthenticator() (f *filer.Filer, a *authenticator.HttpBasicAuthenticator) {
+	f = filer.New(authenticator.NewNeverAuthenticated())
+	var htpasswdFilePath = f.HtpasswdFilePath()
+	if err := f.Err(); err != nil {
+		log.Printf("no .htpasswd found")
+	} else {
+		log.Printf("using authentication data from .htpasswd")
+	}
+	a = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
+	f.SetAuthenticator(a)
+	return
 }

@@ -45,8 +45,20 @@ func wrapErr(err error) error {
 
 func (f *basicFiler) pathFromRequest(request *http.Request) string {
 	var p = "." + request.URL.Path
+	f.assertFileIsNotHidden(p)
 	f.assertPathInsideWorkingDirectory(p)
 	return p
+}
+
+func (f *basicFiler) assertFileIsNotHidden(p string) {
+	if f.err != nil {
+		return
+	}
+
+	var base = path.Base(p)
+	if strings.HasPrefix(base, ".") {
+		f.setErr(NewPathNotFoundError(fmt.Sprintf("%s is a hidden file and may not be displayed", p)))
+	}
 }
 
 func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {

@@ -37,12 +37,10 @@ Likewise, an anonymous user being not logged in can't read or write files throug
 For example, a file `rw-rw-r--` might be read by an anonymous user, but he won't be able to change that file.
 Also, in a directory `rwxr-xr-x`, only a user being logged in may create new files.
 
-### Currently unimplemented access control features
-
 Users can login.
-The login information is configured in a good old `htpasswd` file.
-
-By default, authenticated users can read and write all files that are readable
+The login information is configured in a good old `.htpasswd` file, placed in the working directory
+of the Gone process.
+Authenticated users can read and write all files that are readable
 resp. writeable by the Gone process.
 
 

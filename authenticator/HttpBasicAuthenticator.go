@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fxnn/gone/internal/github.com/abbot/go-http-auth"
 	"github.com/fxnn/gone/context"
+	"github.com/fxnn/gone/internal/github.com/abbot/go-http-auth"
 	"github.com/fxnn/gone/router"
 )
 
@@ -18,8 +18,12 @@ type HttpBasicAuthenticator struct {
 	authenticationStore   cookieAuthenticationStore
 }
 
-func NewHttpBasicAuthenticator() *HttpBasicAuthenticator {
-	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, provideSampleSecret)
+func NewHttpBasicAuthenticator(htpasswdFilePath string) *HttpBasicAuthenticator {
+	var secretProvider = noSecrets
+	if htpasswdFilePath != "" {
+		secretProvider = auth.HtpasswdFileProvider(htpasswdFilePath)
+	}
+	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, secretProvider)
 	var authenticationStore = newCookieAuthenticationStore()
 	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore}
 }
@@ -70,10 +74,9 @@ func (a *HttpBasicAuthenticator) setUserId(request *http.Request, userId string)
 	ctx.Save(request)
 }
 
-func provideSampleSecret(user, realm string) string {
-	if user == "test" {
-		// password is "hello"
-		return "$1$dlPL2MqE$oQmn16q49SqdmhenQuNgs1"
-	}
+// noSecrets is a auth.SecretProvider that always fails authentication.
+func noSecrets(user, realm string) string {
+	// NOTE "Returning an empty string means failing the authentication."
+	// (from godoc.org/github.com/abbot/go-http-auth)
 	return ""
 }

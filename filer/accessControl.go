@@ -19,6 +19,10 @@ func newAccessControl(authenticator authenticator.Authenticator) accessControl {
 	return accessControl{authenticator, newBasicFiler()}
 }
 
+func (a *accessControl) SetAuthenticator(authenticator authenticator.Authenticator) {
+	a.authenticator = authenticator
+}
+
 func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
 	if a.err != nil {
 		return

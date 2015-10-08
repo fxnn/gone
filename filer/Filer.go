@@ -113,3 +113,19 @@ func (f *Filer) mimeTypeForPath(p string) string {
 	return mime.TypeByExtension(ext)
 	// TODO: Also use DetectContentType
 }
+
+// HtpasswdFilePath returns the path to the ".htpasswd" file in the content
+// root, if one exists.
+// Otherwise, it returns the empty string and sets the Err() value.
+func (f *Filer) HtpasswdFilePath() string {
+	wd := f.workingDirectory()
+	if f.err != nil {
+		return ""
+	}
+	htpasswdFilePath := path.Join(wd, ".htpasswd")
+	f.assertPathExists(htpasswdFilePath)
+	if f.err != nil {
+		return ""
+	}
+	return htpasswdFilePath
+}
