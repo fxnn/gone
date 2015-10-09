@@ -52,6 +52,22 @@ func wrapErr(err error) error {
 	return err
 }
 
+// FileSizeForRequest returns the size of the underlying file in bytes, if any,
+// or sets the Err() value.
+func (f *basicFiler) FileSizeForRequest(request *http.Request) int64 {
+	p := f.pathFromRequest(request)
+	if f.err != nil {
+		return -1
+	}
+
+	var info os.FileInfo
+	if info, f.err = os.Stat(p); f.err != nil {
+		return -1
+	}
+
+	return info.Size()
+}
+
 func (f *basicFiler) pathFromRequest(request *http.Request) string {
 	return f.normalizePath(path.Join(f.contentRootPath, request.URL.Path))
 }

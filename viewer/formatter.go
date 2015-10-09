@@ -2,6 +2,7 @@ package viewer
 
 import (
 	"io"
+	"log"
 	"mime"
 	"net/http"
 

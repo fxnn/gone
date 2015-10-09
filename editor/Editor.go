@@ -1,13 +1,20 @@
 package editor
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/fxnn/gone/failer"
 	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/templates"
+)
+
+const (
+	maxEditableBytes = 10 * 1024 * 1024 // 10 MiB of data
 )
 
 // The Editor is a HTTP Handler that serves the editor UI.
@@ -81,6 +88,12 @@ func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
+	if err := e.assertEditableTextFile(request); err != nil {
+		log.Printf("%s %s: no editable text file: %s", request.Method, request.URL, err)
+		failer.ServeUnsupportedMediaType(writer, request)
+		return
+	}
+
 	var content = e.filer.ReadString(request)
 	if err := e.filer.Err(); err != nil {
 		if !filer.IsPathNotFoundError(err) {
@@ -106,4 +119,25 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("%s %s: served from template", request.Method, request.URL)
+}
+
+func (e *Editor) assertEditableTextFile(request *http.Request) error {
+	bytes := e.filer.FileSizeForRequest(request)
+	if err := e.filer.Err(); err != nil && os.IsNotExist(err) {
+		// HINT: doesn't exist; that's pretty editable
+		return nil
+	}
+
+	if bytes > maxEditableBytes {
+		return fmt.Errorf(
+			"the file size of %d bytes is larger than the allowed %d bytes",
+			bytes, maxEditableBytes)
+	}
+
+	mimeType := e.filer.MimeTypeForRequest(request)
+	if e.filer.Err() == nil && strings.HasPrefix(mimeType, "text/") {
+		return nil
+	}
+
+	return fmt.Errorf("the mime type %s doesn't represent editable text", mimeType)
 }

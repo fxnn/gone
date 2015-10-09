@@ -56,10 +56,11 @@ func (f *Filer) first512BytesForPath(p string) []byte {
 		return nil
 	}
 	var buf []byte = make([]byte, 512)
-	_, f.err = readCloser.Read(buf)
+	var n int
+	n, f.err = readCloser.Read(buf)
 	readCloser.Close()
 
-	return buf
+	return buf[:n]
 }
 
 // ReadString returns the requested content as string.
