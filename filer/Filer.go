@@ -11,6 +11,8 @@ import (
 	"github.com/fxnn/gone/authenticator"
 )
 
+const fallbackMimeType = "application/octet-stream"
+
 // Filer maps incoming HTTP requests to the file system.
 type Filer struct {
 	accessControl
@@ -19,6 +21,45 @@ type Filer struct {
 // New initializes a zeroe'd instance ready to use.
 func New(authenticator authenticator.Authenticator) *Filer {
 	return &Filer{newAccessControl(authenticator)}
+}
+
+func (f *Filer) MimeTypeForRequest(request *http.Request) string {
+	if f.err != nil {
+		return ""
+	}
+	return f.mimeTypeForPath(f.pathFromRequest(request))
+}
+
+func (f *Filer) mimeTypeForPath(p string) string {
+	if f.err != nil {
+		return fallbackMimeType
+	}
+
+	var ext = path.Ext(p)
+	if mimeType := mime.TypeByExtension(ext); mimeType != "" {
+		return mimeType
+	}
+
+	var first512Bytes = f.first512BytesForPath(p)
+	f.Err() // clear error flag, as DetectContentType always returns something
+
+	return http.DetectContentType(first512Bytes)
+}
+
+func (f *Filer) first512BytesForPath(p string) []byte {
+	if f.err != nil {
+		return nil
+	}
+
+	var readCloser = f.openReaderAtPath(p)
+	if f.err != nil {
+		return nil
+	}
+	var buf []byte = make([]byte, 512)
+	_, f.err = readCloser.Read(buf)
+	readCloser.Close()
+
+	return buf
 }
 
 // ReadString returns the requested content as string.
@@ -105,22 +146,6 @@ func (f *Filer) openWriterAtPath(p string) (writer io.WriteCloser) {
 	writer, err := os.Create(p)
 	f.setErr(err)
 	return
-}
-
-func (f *Filer) MimeTypeForRequest(request *http.Request) string {
-	if f.err != nil {
-		return ""
-	}
-	return f.mimeTypeForPath(f.pathFromRequest(request))
-}
-
-func (f *Filer) mimeTypeForPath(p string) string {
-	if f.err != nil {
-		return ""
-	}
-	var ext = path.Ext(p)
-	return mime.TypeByExtension(ext)
-	// TODO: Also use DetectContentType
 }
 
 // HtpasswdFilePath returns the path to the ".htpasswd" file in the content

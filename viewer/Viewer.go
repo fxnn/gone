@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-const fallbackMimeType = "application/octet-stream"
-
 // The Viewer serves HTTP requests with content from the filesystem.
 type Viewer struct {
 	filer *filer.Filer
@@ -58,8 +56,7 @@ func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (v *Viewer) formatterForRequest(request *http.Request) formatter {
-	if mimeType := v.filer.MimeTypeForRequest(request); v.filer.Err() == nil {
-		return mimeTypeFormatter(mimeType)
-	}
-	return newRawFormatter(fallbackMimeType)
+	var mimeType = v.filer.MimeTypeForRequest(request)
+	v.filer.Err() // don't care for errors
+	return mimeTypeFormatter(mimeType)
 }
