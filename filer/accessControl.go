@@ -28,7 +28,11 @@ func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
 		return
 	}
 	if !a.HasWriteAccessForRequest(request) {
-		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
+		var msg = fmt.Sprintf("Write access denied on %s", request.URL)
+		if a.err != nil {
+			msg = fmt.Sprintf("%s: %s", msg, a.err)
+		}
+		a.setErr(NewAccessDeniedError(msg))
 	}
 }
 
@@ -37,7 +41,11 @@ func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
 		return
 	}
 	if !a.HasReadAccessForRequest(request) {
-		a.setErr(NewAccessDeniedError(fmt.Sprintf("Access denied on %s", request.URL)))
+		var msg = fmt.Sprintf("Read access denied on %s", request.URL)
+		if a.err != nil {
+			msg = fmt.Sprintf("%s: %s", msg, a.err)
+		}
+		a.setErr(NewAccessDeniedError(msg))
 	}
 }
 
@@ -45,37 +53,23 @@ func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
 	if a.authenticator.IsAuthenticated(request) {
 		return true
 	}
-	return a.hasWriteAccessToPath(a.pathFromRequest(request))
+	var mode = a.relevantFileModeForPath(a.pathFromRequest(request))
+	return a.err == nil && a.hasWorldWritePermission(mode)
 }
 
 func (a *accessControl) HasReadAccessForRequest(request *http.Request) bool {
 	if a.authenticator.IsAuthenticated(request) {
 		return true
 	}
-	return a.hasReadAccessToPath(a.pathFromRequest(request))
+	var mode = a.relevantFileModeForPath(a.pathFromRequest(request))
+	return a.err == nil && a.hasWorldReadPermission(mode)
 }
 
-func (a *accessControl) hasWriteAccessToPath(p string) bool {
-	if a.err != nil {
-		return false
-	}
-	return a.hasWriteAccessForFileMode(a.relevantFileModeForPath(p))
-}
-
-func (a *accessControl) hasReadAccessToPath(p string) bool {
-	if a.err != nil {
-		return false
-	}
-	return a.hasReadAccessForFileMode(a.relevantFileModeForPath(p))
-}
-
-func (a *accessControl) hasWriteAccessForFileMode(mode os.FileMode) bool {
-	// 0002 is the write permission for others
+func (a *accessControl) hasWorldWritePermission(mode os.FileMode) bool {
 	return mode&0002 != 0
 }
 
-func (a *accessControl) hasReadAccessForFileMode(mode os.FileMode) bool {
-	// 0004 is the read permission for others
+func (a *accessControl) hasWorldReadPermission(mode os.FileMode) bool {
 	return mode&0004 != 0
 }
 

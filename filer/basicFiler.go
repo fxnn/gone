@@ -9,15 +9,24 @@ import (
 	"strings"
 )
 
-// The basicFiler implements basic algorithms and error handling needed when
+// basicFiler implements basic algorithms and error handling needed when
 // dealing with files.
 // It basically wraps golang library functions for error handling.
 type basicFiler struct {
-	err error
+	contentRootPath string
+	err             error
 }
 
 func newBasicFiler() basicFiler {
-	return basicFiler{nil}
+	return basicFiler{
+		contentRootPath: "",
+		err:             nil,
+	}
+}
+
+// SetContentRootPath changes the path to the directory all the content is in.
+func (f *basicFiler) SetContentRootPath(contentRootPath string) {
+	f.contentRootPath = f.normalizePath(contentRootPath)
 }
 
 // Never forget to check for errors.
@@ -32,7 +41,7 @@ func (f *basicFiler) setErr(err error) {
 	f.err = wrapErr(err)
 }
 
-// Wraps f.err to a filer-specific error, if possible
+// WrapErr wraps f.err to a filer-specific error, if possible
 func wrapErr(err error) error {
 	if os.IsNotExist(err) {
 		if pathError, ok := err.(*os.PathError); ok {
@@ -44,10 +53,12 @@ func wrapErr(err error) error {
 }
 
 func (f *basicFiler) pathFromRequest(request *http.Request) string {
-	var p = "." + request.URL.Path
+	return f.normalizePath(path.Join(f.contentRootPath, request.URL.Path))
+}
+
+func (f *basicFiler) assertPathValidForAnyAccess(p string) {
 	f.assertFileIsNotHidden(p)
-	f.assertPathInsideWorkingDirectory(p)
-	return p
+	f.assertPathInsideContentRoot(p)
 }
 
 func (f *basicFiler) assertFileIsNotHidden(p string) {
@@ -55,46 +66,33 @@ func (f *basicFiler) assertFileIsNotHidden(p string) {
 		return
 	}
 
-	var base = path.Base(p)
-	if strings.HasPrefix(base, ".") {
+	if strings.HasPrefix(path.Base(p), ".") {
 		f.setErr(NewPathNotFoundError(fmt.Sprintf("%s is a hidden file and may not be displayed", p)))
 	}
 }
 
-func (f *basicFiler) assertPathInsideWorkingDirectory(p string) {
+func (f *basicFiler) assertPathInsideContentRoot(p string) {
 	if f.err != nil {
 		return
 	}
 
 	var normalizedPath = f.normalizePath(p)
-	var wdPath = f.normalizePath(f.workingDirectory())
 
-	if f.err == nil && !strings.HasPrefix(normalizedPath, wdPath) {
-		f.setErr(NewPathNotFoundError(fmt.Sprintf("%s is not inside working directory", p)))
-	} else if f.err != nil {
-		var oldErr = f.err
-		f.err = nil
-		f.assertPathInsideWorkingDirectory(path.Dir(p))
-		if f.err != nil {
-			f.err = oldErr
-		}
+	if f.err == nil && !strings.HasPrefix(normalizedPath, f.contentRootPath) {
+		f.setErr(NewPathNotFoundError(
+			fmt.Sprintf("%s is not inside content root %s", p, f.contentRootPath),
+		))
 	}
 }
 
-// Builds an absolute path and cleans it from ".." and ".", but doesn't resolve
-// symlinks
+// normalizePath builds an absolute path and cleans it from ".." and ".", but
+// doesn't resolve symlinks
 func (f *basicFiler) normalizePath(path string) string {
 	if f.err != nil {
 		return path
 	}
 
-	var result string
-
-	result = f.absPath(path)
-	f.assertPathExists(result)
-
-	// HINT: Remove .. and ., remove trailing slash
-	return f.cleanPath(result)
+	return f.cleanPath(f.absPath(path))
 }
 
 func (f *basicFiler) absPath(path string) (absPath string) {
@@ -129,13 +127,4 @@ func (f *basicFiler) cleanPath(path string) string {
 		return path
 	}
 	return filepath.Clean(path)
-}
-
-func (f *basicFiler) workingDirectory() (wd string) {
-	if f.err != nil {
-		return ""
-	}
-	wd, err := os.Getwd()
-	f.setErr(err)
-	return
 }

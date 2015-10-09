@@ -8,6 +8,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/editor"
@@ -32,6 +33,7 @@ func main() {
 
 func filerAndAuthenticator() (f *filer.Filer, a *authenticator.HttpBasicAuthenticator) {
 	f = filer.New(authenticator.NewNeverAuthenticated())
+	f.SetContentRootPath(getwd())
 	var htpasswdFilePath = f.HtpasswdFilePath()
 	if err := f.Err(); err != nil {
 		log.Printf("no .htpasswd found")
@@ -41,4 +43,12 @@ func filerAndAuthenticator() (f *filer.Filer, a *authenticator.HttpBasicAuthenti
 	a = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
 	f.SetAuthenticator(a)
 	return
+}
+
+func getwd() string {
+	if wd, err := os.Getwd(); err == nil {
+		return wd
+	} else {
+		panic(err)
+	}
 }

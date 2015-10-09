@@ -15,7 +15,7 @@ func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
 	tmpdir := createTempDirInCurrentwd(t, 0772)
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
-	sut := New(authenticator.NewNeverAuthenticated())
+	sut := sutNotAuthenticated(t)
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpdir + "/newFile"))
 	closed(writeCloser)
@@ -28,7 +28,7 @@ func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
-	sut := New(authenticator.NewNeverAuthenticated())
+	sut := sutNotAuthenticated(t)
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpfile))
 	closed(writeCloser)
@@ -41,7 +41,7 @@ func TestOpenReaderDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
-	sut := New(authenticator.NewNeverAuthenticated())
+	sut := sutNotAuthenticated(t)
 
 	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
 	closed(readCloser)
@@ -54,7 +54,7 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
-	sut := New(authenticator.NewAlwaysAuthenticated())
+	sut := sutAuthenticated(t)
 
 	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
 	closed(readCloser)
@@ -65,11 +65,11 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 
 func TestAccessToParentDirDenied(t *testing.T) {
 	tempFile := createTempFileInCurrentwd(t, 0777)
-	tempWdName := createTempWdInCurrentwd(t, 0777)
-	defer removeTempWdFromCurrentwd(t, tempWdName)
+	tempWd := createTempWdInCurrentwd(t, 0777)
+	defer removeTempWdFromCurrentwd(t, tempWd)
 	defer removeTempFileFromCurrentwd(t, tempFile)
 
-	sut := New(authenticator.NewAlwaysAuthenticated())
+	sut := sutAuthenticated(t)
 
 	readCloser := sut.OpenReader(requestGET("/../" + tempFile))
 	closed(readCloser)
@@ -88,13 +88,25 @@ func TestAccessToSymlinkToParentDirAllowed(t *testing.T) {
 	defer removeTempWdFromCurrentwd(t, tempWdName)
 	defer removeTempFileFromCurrentwd(t, tempFile)
 
-	sut := New(authenticator.NewAlwaysAuthenticated())
+	sut := sutAuthenticated(t)
 
 	readCloser := sut.OpenReader(requestGET("/" + symlinkName))
 	closed(readCloser)
 	if err := sut.Err(); err != nil {
 		t.Fatalf("could open reader for symlink to file %s from wd %s: %s", tempFile, getwd(t), err)
 	}
+}
+
+func sutNotAuthenticated(t *testing.T) *Filer {
+	var sut = New(authenticator.NewNeverAuthenticated())
+	sut.SetContentRootPath(getwd(t))
+	return sut
+}
+
+func sutAuthenticated(t *testing.T) *Filer {
+	var sut = New(authenticator.NewAlwaysAuthenticated())
+	sut.SetContentRootPath(getwd(t))
+	return sut
 }
 
 func requestGET(path string) (request *http.Request) {

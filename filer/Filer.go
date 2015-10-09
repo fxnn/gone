@@ -11,17 +11,17 @@ import (
 	"github.com/fxnn/gone/authenticator"
 )
 
-// Maps incoming HTTP requests to the file system.
+// Filer maps incoming HTTP requests to the file system.
 type Filer struct {
 	accessControl
 }
 
-// Initializes a zeroe'd instance ready to use.
+// New initializes a zeroe'd instance ready to use.
 func New(authenticator authenticator.Authenticator) *Filer {
 	return &Filer{newAccessControl(authenticator)}
 }
 
-// Returns the requested content as string.
+// ReadString returns the requested content as string.
 // A caller must always check the Err() method.
 func (f *Filer) ReadString(request *http.Request) string {
 	if f.err != nil {
@@ -30,7 +30,7 @@ func (f *Filer) ReadString(request *http.Request) string {
 	return f.readAllAndClose(f.OpenReader(request))
 }
 
-// Writes the given content into a file pointed to by the request.
+// WriteString writes the given content into a file pointed to by the request.
 // A caller must always check the Err() method.
 func (f *Filer) WriteString(request *http.Request, content string) {
 	if f.err != nil {
@@ -64,23 +64,31 @@ func (f *Filer) writeAllAndClose(writeCloser io.WriteCloser, content string) {
 // OpenReader opens a reader for the given request.
 // A caller must close the reader after using it.
 // Also, he must always check the Err() method.
+//
+// The method handles access control.
 func (f *Filer) OpenReader(request *http.Request) io.ReadCloser {
-	f.assertHasReadAccessForRequest(request)
 	if f.err != nil {
 		return nil
 	}
+	f.assertHasReadAccessForRequest(request)
 	return f.openReaderAtPath(f.pathFromRequest(request))
 }
 
+// OpenWriter opens a writer for the given request.
+// A caller must close the writer after using it.
+// Also, he must always check the Err() method.
+//
+// The method handles access control.
 func (f *Filer) OpenWriter(request *http.Request) io.WriteCloser {
-	f.assertHasWriteAccessForRequest(request)
 	if f.err != nil {
 		return nil
 	}
+	f.assertHasWriteAccessForRequest(request)
 	return f.openWriterAtPath(f.pathFromRequest(request))
 }
 
 func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
+	f.assertPathValidForAnyAccess(p)
 	if f.err != nil {
 		return nil
 	}
@@ -90,6 +98,7 @@ func (f *Filer) openReaderAtPath(p string) (reader io.ReadCloser) {
 }
 
 func (f *Filer) openWriterAtPath(p string) (writer io.WriteCloser) {
+	f.assertPathValidForAnyAccess(p)
 	if f.err != nil {
 		return nil
 	}
@@ -118,11 +127,7 @@ func (f *Filer) mimeTypeForPath(p string) string {
 // root, if one exists.
 // Otherwise, it returns the empty string and sets the Err() value.
 func (f *Filer) HtpasswdFilePath() string {
-	wd := f.workingDirectory()
-	if f.err != nil {
-		return ""
-	}
-	htpasswdFilePath := path.Join(wd, ".htpasswd")
+	htpasswdFilePath := path.Join(f.contentRootPath, ".htpasswd")
 	f.assertPathExists(htpasswdFilePath)
 	if f.err != nil {
 		return ""

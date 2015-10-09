@@ -2,7 +2,6 @@ package viewer
 
 import (
 	"io"
-	"log"
 	"mime"
 	"net/http"
 
@@ -18,10 +17,10 @@ var formatterByMimeType = map[string]formatter{
 }
 
 func mimeTypeFormatter(mediaType string) formatter {
-	if mimeType, _, err := mime.ParseMediaType(mediaType); err != nil {
-		log.Printf("mimeTypeFormatter %s: %s", mediaType, err)
-	} else if f, ok := formatterByMimeType[mimeType]; ok {
-		return f
+	if mimeType, _, err := mime.ParseMediaType(mediaType); err == nil {
+		if f, ok := formatterByMimeType[mimeType]; ok {
+			return f
+		}
 	}
 	return newRawFormatter(mediaType)
 }
