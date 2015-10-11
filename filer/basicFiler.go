@@ -2,6 +2,7 @@ package filer
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -129,17 +130,19 @@ func (f *basicFiler) assertPathInsideContentRoot(p string) {
 // Otherwise, it looks for all files in the
 // directory beginning with the filename and a dot ("."), and returns the first
 // match in alphabetic order.
+// Err() will not be set.
 func (f *basicFiler) guessExtension(p string) string {
 	if f.err != nil {
 		return p
 	}
-	if f.assertPathExists(p); f.err == nil {
+	if f.assertPathExists(p); f.Err() == nil {
 		// don't apply for existing files
 		return p
 	}
-	var matches []string
-	if matches, f.err = filepath.Glob(p + ".*"); f.err == nil && len(matches) > 0 {
+	if matches, err := filepath.Glob(p + ".*"); err == nil && len(matches) > 0 {
 		return matches[0]
+	} else if err != nil {
+		log.Printf("guessExtension for %s: %s", p, err)
 	}
 	return p
 }
@@ -172,12 +175,10 @@ func (f *basicFiler) assertPathExists(path string) {
 	}
 }
 
+// isDirectory returns true iff the path points to a directory. Err() will
+// never be set.
 func (f *basicFiler) isDirectory(path string) bool {
-	if f.err != nil {
-		return false
-	}
 	if info, err := os.Stat(path); err != nil {
-		f.setErr(err)
 		return false
 	} else {
 		return info.IsDir()
