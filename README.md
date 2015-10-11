@@ -35,7 +35,7 @@ For example, if the Gone process is run by user `joe`, it won't be able to read 
 
 Likewise, an anonymous user being not logged in can't read or write files through Gone, except those who have _world_ permissions.
 For example, a file `rw-rw-r--` might be read by an anonymous user, but he won't be able to change that file.
-Also, in a directory `rwxr-xr-x`, only a user being logged in may create new files.
+Also, in a directory `rwxrwxr-x`, only a user being logged in may create new files.
 
 Users can login by appending `?login` to the URL.
 The login information is configured in a good old `.htpasswd` file, placed in the working directory
@@ -43,7 +43,13 @@ of the Gone process.
 Authenticated users can read and write all files that are readable
 resp. writeable by the Gone process.
 
-**NOTE:** Authentication information are submitted without encryption, so *use SSL*!
+### Security considerations
+
+* Authentication information are submitted without encryption, so *use SSL*!
+* Anyone may read *and write* files just by assigning world read/write permissions, so better
+  `chmod -R o-rw *` if you want to keep your stuff secret!
+* Gone uses the working directory for content delivery, so better use a start script which
+  invokes `cd`!
 
 
 ## Index documents, file names
@@ -95,7 +101,8 @@ While the `editor` serves the editing UI, the `viewer` is responsible for
 serving whatever file is requested.
 
 Both use a set of backend packages.
-* The `filer` encapsulate reading and writing files from the filesystem.
+* The `filer` encapsulates mapping requests to the filesystem as well as reading
+  and writing the files themselves.
 * The `templates` package caches and renders the templates used for HTML output.
 * The `resources` package encapsulates access to static resources, which are
   bundled with each `gone` distribution.
