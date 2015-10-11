@@ -37,11 +37,24 @@ Likewise, an anonymous user being not logged in can't read or write files throug
 For example, a file `rw-rw-r--` might be read by an anonymous user, but he won't be able to change that file.
 Also, in a directory `rwxr-xr-x`, only a user being logged in may create new files.
 
-Users can login.
+Users can login by appending `?login` to the URL.
 The login information is configured in a good old `.htpasswd` file, placed in the working directory
 of the Gone process.
 Authenticated users can read and write all files that are readable
 resp. writeable by the Gone process.
+
+**NOTE:** Authentication information are submitted without encryption, so *use SSL*!
+
+
+## Index documents, file names
+
+Calling a directory, Gone will look for a file named `index`.
+Calling any file that does not exist (including `index`), Gone will try to look
+for files with a extension appended and use the first one in alphabetic order.
+
+So, if you call `/some/file`, but directory `some` only includes `file.md`,
+Gone will display *that* file.
+This mechanism is transparent to the user, no redirect will happen.
 
 
 ## Future

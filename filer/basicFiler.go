@@ -69,7 +69,29 @@ func (f *basicFiler) FileSizeForRequest(request *http.Request) int64 {
 }
 
 func (f *basicFiler) pathFromRequest(request *http.Request) string {
-	return f.normalizePath(path.Join(f.contentRootPath, request.URL.Path))
+	var p = f.guessExtension(f.normalizePath(path.Join(f.contentRootPath, request.URL.Path)))
+	if f.err != nil {
+		return p
+	}
+	if f.isDirectory(p) {
+		return f.indexForDirectory(p)
+	}
+	return p
+}
+
+// indexForDirectory finds the index document inside the given directory.
+// On success, it returns the path to the index document, otherwise it simply
+// returns the given path.
+func (f *basicFiler) indexForDirectory(dir string) string {
+	if f.err != nil {
+		return dir
+	}
+	var index = f.guessExtension(path.Join(dir, "index"))
+	f.assertPathExists(index)
+	if err := f.Err(); err != nil {
+		return dir
+	}
+	return index
 }
 
 func (f *basicFiler) assertPathValidForAnyAccess(p string) {
@@ -101,6 +123,27 @@ func (f *basicFiler) assertPathInsideContentRoot(p string) {
 	}
 }
 
+// guessExtension tries to append the file extension, if missing.
+// If the given path points to a valid file,
+// simply returns the argument.
+// Otherwise, it looks for all files in the
+// directory beginning with the filename and a dot ("."), and returns the first
+// match in alphabetic order.
+func (f *basicFiler) guessExtension(p string) string {
+	if f.err != nil {
+		return p
+	}
+	if f.assertPathExists(p); f.err == nil {
+		// don't apply for existing files
+		return p
+	}
+	var matches []string
+	if matches, f.err = filepath.Glob(p + ".*"); f.err == nil && len(matches) > 0 {
+		return matches[0]
+	}
+	return p
+}
+
 // normalizePath builds an absolute path and cleans it from ".." and ".", but
 // doesn't resolve symlinks
 func (f *basicFiler) normalizePath(path string) string {
@@ -126,6 +169,18 @@ func (f *basicFiler) assertPathExists(path string) {
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		f.setErr(NewPathNotFoundError(err.Error()))
+	}
+}
+
+func (f *basicFiler) isDirectory(path string) bool {
+	if f.err != nil {
+		return false
+	}
+	if info, err := os.Stat(path); err != nil {
+		f.setErr(err)
+		return false
+	} else {
+		return info.IsDir()
 	}
 }
 

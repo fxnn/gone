@@ -31,7 +31,7 @@ func (f *Filer) MimeTypeForRequest(request *http.Request) string {
 }
 
 func (f *Filer) mimeTypeForPath(p string) string {
-	if f.err != nil {
+	if f.isDirectory(p) || f.err != nil {
 		return fallbackMimeType
 	}
 
