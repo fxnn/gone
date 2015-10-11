@@ -52,8 +52,11 @@ Calling a directory, Gone will look for a file named `index`.
 Calling any file that does not exist (including `index`), Gone will try to look
 for files with a extension appended and use the first one in alphabetic order.
 
-So, if you call `/some/file`, but directory `some` only includes `file.md`,
-Gone will display *that* file.
+So, the file `http://localhost:8080/test.md` could also be referenced as
+`http://localhost:8080/test`, as long as no `test` file exists.
+In the same way, an `index.md` file can be used as index document and will fulfill
+the above requirements.
+
 This mechanism is transparent to the user, no redirect will happen.
 
 
