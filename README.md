@@ -6,7 +6,7 @@ Gone is a wiki written in [Go](http://golang.org). It's
 * Convention over Configuration and
 * designed with Developers and Admins in mind.
 
-It displays Markdown, HTML and Plaintext straight from the filesystem.
+It displays Markdown (as HTML), HTML and Plaintext straight from the filesystem.
 It allows you to edit just anything that has MIME type `text/*`.
 It uses the filesystem's access control as far as possible.
 
