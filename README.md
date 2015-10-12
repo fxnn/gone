@@ -74,6 +74,7 @@ Some day, Gone might be able to
 * support OpenID authentication.
 * respect each files / directories group attribute for access control, in combination with a `htgroup` file.
 * incorporate Git as version control system.
+* include a fulltext search.
 
 
 ## Development
