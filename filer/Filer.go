@@ -30,7 +30,9 @@ func (f *Filer) MimeTypeForRequest(request *http.Request) string {
 	return f.mimeTypeForPath(f.pathFromRequest(request))
 }
 
-func (f *Filer) mimeTypeForPath(p string) string {
+func (f *Filer) mimeTypeForPath(symlinkedPath string) string {
+	// NOTE, that filename based mimetype detection needs symlinks resolution
+	var p = f.evalSymlinks(symlinkedPath)
 	if f.isDirectory(p) || f.err != nil {
 		return fallbackMimeType
 	}
@@ -43,7 +45,8 @@ func (f *Filer) mimeTypeForPath(p string) string {
 	var first512Bytes = f.first512BytesForPath(p)
 	f.Err() // clear error flag, as DetectContentType always returns something
 
-	return http.DetectContentType(first512Bytes)
+	result := http.DetectContentType(first512Bytes)
+	return result
 }
 
 func (f *Filer) first512BytesForPath(p string) []byte {
