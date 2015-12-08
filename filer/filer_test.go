@@ -11,8 +11,9 @@ import (
 	"github.com/fxnn/gone/authenticator"
 )
 
+// https://github.com/fxnn/gone/issues/7 No.2 positive
 func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
-	tmpdir := createTempDirInCurrentwd(t, 0772)
+	tmpdir := createTempDirInCurrentwd(t, 0773)
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
 	sut := sutNotAuthenticated(t)
@@ -24,8 +25,9 @@ func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
 	}
 }
 
-func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
-	tmpfile := createTempFileInCurrentwd(t, 0770)
+// https://github.com/fxnn/gone/issues/7 No.2 negative write
+func TestOpenWriterDeniesWhenWorldWritePermissionIsMissing(t *testing.T) {
+	tmpfile := createTempFileInCurrentwd(t, 0771)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
 	sut := sutNotAuthenticated(t)
@@ -37,13 +39,62 @@ func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 	}
 }
 
-func TestOpenReaderDeniesWhenWorldPermissionIsMissing(t *testing.T) {
-	tmpfile := createTempFileInCurrentwd(t, 0770)
+// https://github.com/fxnn/gone/issues/7 No.2 negative execute
+func TestOpenWriterDeniesWhenWorldExecutePermissionIsMissing(t *testing.T) {
+	tmpfile := createTempFileInCurrentwd(t, 0772)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
 	sut := sutNotAuthenticated(t)
 
-	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
+	writeCloser := sut.OpenWriter(requestGET("/" + tmpfile))
+	closed(writeCloser)
+	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
+	}
+}
+
+// https://github.com/fxnn/gone/issues/7 No.3 positive
+func TestOpenReaderInsideDirectoryProceedsWithSupplementaryPermissions(t *testing.T) {
+	tmpdir := createTempWdInCurrentwd(t, 0771)    // world execute flag
+	tmpfile := createTempFileInCurrentwd(t, 0774) // world read flag
+	defer removeTempFileFromCurrentwd(t, tmpfile)
+	defer removeTempWdFromCurrentwd(t, tmpdir)
+
+	sut := sutNotAuthenticated(t)
+
+	readCloser := sut.OpenReader(requestGET("/" + tmpdir + "/" + tmpfile))
+	closed(readCloser)
+	if err := sut.Err(); err != nil {
+		t.Fatalf("failed to open file for reading: %s", err)
+	}
+}
+
+// https://github.com/fxnn/gone/issues/7 No.3 negative (execute)
+func TestOpenReaderInsideDirectoryDeniesOnMissingExecutePermission(t *testing.T) {
+	tmpdir := createTempWdInCurrentwd(t, 0770)    // missing world execute flag
+	tmpfile := createTempFileInCurrentwd(t, 0774) // world read flag
+	defer removeTempFileFromCurrentwd(t, tmpfile)
+	defer removeTempWdFromCurrentwd(t, tmpdir)
+
+	sut := sutNotAuthenticated(t)
+
+	readCloser := sut.OpenReader(requestGET("/" + tmpdir + "/" + tmpfile))
+	closed(readCloser)
+	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
+	}
+}
+
+// https://github.com/fxnn/gone/issues/7 No.3 negative (read)
+func TestOpenReaderInsideDirectoryDeniesOnMissingReadPermission(t *testing.T) {
+	tmpdir := createTempWdInCurrentwd(t, 0771)    // world execute flag
+	tmpfile := createTempFileInCurrentwd(t, 0774) // missing world read flag
+	defer removeTempFileFromCurrentwd(t, tmpfile)
+	defer removeTempWdFromCurrentwd(t, tmpdir)
+
+	sut := sutNotAuthenticated(t)
+
+	readCloser := sut.OpenReader(requestGET("/" + tmpdir + "/" + tmpfile))
 	closed(readCloser)
 	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
