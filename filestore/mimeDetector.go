@@ -3,9 +3,9 @@ package filestore
 import (
 	"mime"
 	"net/http"
-	"path"
 
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 type mimeDetector struct {
@@ -18,12 +18,12 @@ func newMimeDetector(p *pathIO, f *basicFiler, s *errStore) *mimeDetector {
 	return &mimeDetector{p, f, s}
 }
 
-func (m *mimeDetector) mimeTypeForPath(p string) string {
-	if m.isDirectory(p) || m.hasErr() {
+func (m *mimeDetector) mimeTypeForPath(p gopath.GoPath) string {
+	if p.IsDirectory() || p.HasErr() {
 		return store.FallbackMimeType
 	}
 
-	var ext = path.Ext(p)
+	var ext = p.Ext()
 	if mimeType := mime.TypeByExtension(ext); mimeType != "" {
 		return mimeType
 	}
@@ -34,8 +34,8 @@ func (m *mimeDetector) mimeTypeForPath(p string) string {
 	return http.DetectContentType(first512Bytes)
 }
 
-func (m *mimeDetector) first512BytesForPath(p string) []byte {
-	if m.hasErr() {
+func (m *mimeDetector) first512BytesForPath(p gopath.GoPath) []byte {
+	if p.HasErr() {
 		return nil
 	}
 

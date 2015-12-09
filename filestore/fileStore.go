@@ -3,7 +3,6 @@ package filestore
 import (
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
@@ -38,23 +37,18 @@ func (f *fileStore) MimeTypeForRequest(request *http.Request) string {
 	if f.hasErr() {
 		return ""
 	}
-	return f.mimeTypeForPath(f.evalSymlinks(f.pathFromRequest(request)))
+	return f.mimeTypeForPath(f.pathFromRequest(request).EvalSymlinks())
 }
 
 // FileSizeForRequest returns the size of the underlying file in bytes, if any,
 // or sets the Err() value.
 func (f *fileStore) FileSizeForRequest(request *http.Request) int64 {
-	p := f.pathFromRequest(request)
-	if f.hasErr() {
+	p := f.pathFromRequest(request).Stat()
+	if p.HasErr() {
 		return -1
 	}
 
-	var info os.FileInfo
-	if info = f.stat(p); f.hasErr() {
-		return -1
-	}
-
-	return info.Size()
+	return p.FileInfo().Size()
 }
 
 // ReadString returns the requested content as string.

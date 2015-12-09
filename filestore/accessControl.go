@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 // Maps incoming HTTP requests to the file system.
@@ -73,18 +73,15 @@ func (a *accessControl) hasWorldReadPermission(mode os.FileMode) bool {
 
 // getRelevantFileModeForPath returns the FileMode for the given file or, when
 // the file does not exist, its containing directory.
-func (a *accessControl) relevantFileModeForPath(p string) os.FileMode {
-	if a.hasErr() {
+func (a *accessControl) relevantFileModeForPath(p gopath.GoPath) os.FileMode {
+	if a.hasErr() || p.HasErr() {
 		return 0
 	}
-	info := a.stat(p)
-	if a.hasPathNotFoundError() {
-		a.errAndClear()
+	var s = p.Stat()
+	if !s.IsExists() {
 		// HINT: Inspect permissions of containing directory
-		info = a.stat(path.Dir(p))
+		s = p.Dir().Stat()
 	}
-	if a.hasErr() {
-		return 0
-	}
-	return info.Mode()
+	a.setErr(s.Err())
+	return s.FileMode()
 }
