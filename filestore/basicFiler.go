@@ -3,7 +3,7 @@ package filestore
 import (
 	"net/http"
 
-	"github.com/fxnn/gopath"
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
 )
 
 // basicFiler implements basic algorithms and error handling needed when

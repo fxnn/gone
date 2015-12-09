@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gopath"
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
 )
 
 type pathIO struct {

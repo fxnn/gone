@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gopath"
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
 )
 
 type mimeDetector struct {

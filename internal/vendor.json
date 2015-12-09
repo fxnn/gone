@@ -8,6 +8,11 @@
 			"revisionTime": "2015-09-23T00:49:25+01:00"
 		},
 		{
+			"path": "github.com/fxnn/gopath",
+			"revision": "f57296acd41fa87c6fde78b73f41645cb81014c2",
+			"revisionTime": "2015-12-10T00:45:28+01:00"
+		},
+		{
 			"path": "github.com/gorilla/context",
 			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
 			"revisionTime": "2015-08-19T22:12:45-07:00"

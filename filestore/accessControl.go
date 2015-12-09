@@ -7,7 +7,7 @@ import (
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gopath"
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
 )
 
 // Maps incoming HTTP requests to the file system.
