@@ -102,7 +102,7 @@ While the `editor` serves the editing UI, the `viewer` is responsible for
 serving whatever file is requested.
 
 Both use a set of backend packages.
-* The `filer` encapsulates mapping requests to the filesystem as well as reading
+* The `filestore` encapsulates mapping requests to the filesystem as well as reading
   and writing the files themselves.
 * The `templates` package caches and renders the templates used for HTML output.
 * The `resources` package encapsulates access to static resources, which are
