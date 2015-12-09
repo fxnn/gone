@@ -31,6 +31,7 @@ func (f *basicFiler) stat(p string) (result os.FileInfo) {
 	}
 
 	if result, f.err = os.Stat(p); f.hasErr() {
+		f.err = f.wrapErr(f.err)
 		return nil
 	}
 

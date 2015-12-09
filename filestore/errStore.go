@@ -19,6 +19,10 @@ func (s *errStore) hasErr() bool {
 	return s.err != nil
 }
 
+func (s *errStore) hasPathNotFoundError() bool {
+	return s.hasErr() && store.IsPathNotFoundError(s.err)
+}
+
 // Never forget to check for errors.
 // One call to this function resets the error state.
 func (s *errStore) errAndClear() error {

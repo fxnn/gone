@@ -77,13 +77,13 @@ func (a *accessControl) relevantFileModeForPath(p string) os.FileMode {
 	if a.hasErr() {
 		return 0
 	}
-	info, err := os.Stat(p)
-	if err != nil && os.IsNotExist(err) {
+	info := a.stat(p)
+	if a.hasPathNotFoundError() {
+		a.errAndClear()
 		// HINT: Inspect permissions of containing directory
-		info, err = os.Stat(path.Dir(p))
+		info = a.stat(path.Dir(p))
 	}
-	if err != nil {
-		a.setErr(err)
+	if a.hasErr() {
 		return 0
 	}
 	return info.Mode()

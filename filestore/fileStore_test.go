@@ -126,7 +126,6 @@ func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tempDirName := createTempDirInCurrentwd(t, mode)
 	tempWd := path.Join(wd, tempDirName)
-	t.Logf("tmpwd %s", tempWd)
 	if err := os.Chdir(tempWd); err != nil {
 		t.Fatalf("couldnt change wd to %s: %s", tempWd, err)
 	}
@@ -136,7 +135,6 @@ func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
 func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tmpdir, err := ioutil.TempDir(wd, "gone_test_")
-	t.Logf("tmpdir %s", tmpdir)
 	if err != nil {
 		t.Fatalf("couldnt create tempdir in %s: %s", wd, err)
 	}
@@ -150,7 +148,6 @@ func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
 func createTempFileInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tmpfile, err := ioutil.TempFile(wd, "gone_test_")
-	t.Logf("tmpfile %s", tmpfile)
 	if err != nil {
 		t.Fatalf("couldnt create tempfile in %s: %s", wd, err)
 	}
@@ -175,7 +172,6 @@ func removeTempSymlinkFromCurrentwd(t *testing.T, symlinkName string) {
 
 func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
 	newwd := path.Dir(getwd(t))
-	t.Logf("removewd %s -> %s", tmpdir, newwd)
 	if err := os.Chdir(newwd); err != nil {
 		t.Fatalf("couldnt chdir to %s: %s", newwd, err)
 	}
@@ -185,7 +181,6 @@ func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
 func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {
 	wd := getwd(t)
 	tmpdirPath := path.Join(wd, tmpdir)
-	t.Logf("removedir %s", tmpdirPath)
 	err := os.Remove(tmpdirPath)
 	if err != nil {
 		t.Fatalf("couldnt remove tmpdir %s: %s", tmpdirPath, err)
