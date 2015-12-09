@@ -28,8 +28,12 @@ func FromPath(p string) GoPath {
 }
 
 // FromError constructs an errorneous GoPath instance.
-func FromError(err error) GoPath {
+func FromErr(err error) GoPath {
 	return GoPath{err: err}
+}
+
+func (g GoPath) ClearErr() GoPath {
+	return g.withErr(nil)
 }
 
 func (g GoPath) withPath(p string) GoPath {

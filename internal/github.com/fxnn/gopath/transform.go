@@ -35,6 +35,15 @@ func (g GoPath) Dir() GoPath {
 // GoPath.
 // When the Stat call fails, an errorneous GoPath is returned.
 // Stat always calls os.Stat, even if the GoPath already contains a FileInfo.
+//
+// Be warned: Stat() might cause an errorneous path to be returned, even in
+// normal operation (e.g. file does not exist).
+// An errorneous GoPath will have all operations being no-ops, so take care
+// when using this function.
+//
+// Note, that Stat() is only useful for caching purposes.
+// FileInfo() delivers the Stat() results even if Stat() was not called
+// explicitly.
 func (g GoPath) Stat() GoPath {
 	if g.HasErr() {
 		return g
@@ -95,7 +104,7 @@ func (g GoPath) Clean() GoPath {
 func (g GoPath) GlobAny() GoPath {
 	matches, err := g.Glob()
 	if err != nil {
-		return FromError(err)
+		return FromErr(err)
 	}
 	if len(matches) > 0 {
 		return FromPath(matches[0])
