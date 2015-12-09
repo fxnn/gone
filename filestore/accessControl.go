@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
-	"github.com/fxnn/gone/store"
 	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gone/store"
 )
 
 // Maps incoming HTTP requests to the file system.
@@ -77,11 +77,11 @@ func (a *accessControl) relevantFileModeForPath(p gopath.GoPath) os.FileMode {
 	if a.hasErr() || p.HasErr() {
 		return 0
 	}
-	var s = p.Stat()
-	if !s.IsExists() {
+	var pStat = p.Stat()
+	if !pStat.IsExists() {
 		// HINT: Inspect permissions of containing directory
-		s = p.Dir().Stat()
+		pStat = p.Dir().Stat()
 	}
-	a.setErr(s.Err())
-	return s.FileMode()
+	a.setErr(pStat.Err())
+	return pStat.FileMode()
 }
