@@ -1,4 +1,4 @@
-package filer
+package filestore
 
 import (
 	"io"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/store"
 )
 
 func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
@@ -22,6 +23,7 @@ func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
 	if err := sut.Err(); err != nil {
 		t.Fatalf("failed to open file for writing: %s", err)
 	}
+	removeTempFileFromCurrentwd(t, tmpdir+"/newFile")
 }
 
 func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
@@ -32,7 +34,7 @@ func TestOpenWriterDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpfile))
 	closed(writeCloser)
-	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }
@@ -45,7 +47,7 @@ func TestOpenReaderDeniesWhenWorldPermissionIsMissing(t *testing.T) {
 
 	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
 	closed(readCloser)
-	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }
@@ -66,8 +68,8 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 func TestAccessToParentDirDenied(t *testing.T) {
 	tempFile := createTempFileInCurrentwd(t, 0777)
 	tempWd := createTempWdInCurrentwd(t, 0777)
-	defer removeTempWdFromCurrentwd(t, tempWd)
 	defer removeTempFileFromCurrentwd(t, tempFile)
+	defer removeTempWdFromCurrentwd(t, tempWd)
 
 	sut := sutAuthenticated(t)
 
@@ -75,7 +77,7 @@ func TestAccessToParentDirDenied(t *testing.T) {
 	closed(readCloser)
 	if err := sut.Err(); err == nil {
 		t.Fatalf("could open reader for parent dir of working directory %s", getwd(t))
-	} else if !IsPathNotFoundError(err) {
+	} else if !store.IsPathNotFoundError(err) {
 		t.Fatalf("expected PathNotFoundError: %s", err)
 	}
 }
@@ -97,16 +99,12 @@ func TestAccessToSymlinkToParentDirAllowed(t *testing.T) {
 	}
 }
 
-func sutNotAuthenticated(t *testing.T) *Filer {
-	var sut = New(authenticator.NewNeverAuthenticated())
-	sut.SetContentRootPath(getwd(t))
-	return sut
+func sutNotAuthenticated(t *testing.T) store.Store {
+	return New(getwd(t), authenticator.NewNeverAuthenticated())
 }
 
-func sutAuthenticated(t *testing.T) *Filer {
-	var sut = New(authenticator.NewAlwaysAuthenticated())
-	sut.SetContentRootPath(getwd(t))
-	return sut
+func sutAuthenticated(t *testing.T) store.Store {
+	return New(getwd(t), authenticator.NewAlwaysAuthenticated())
 }
 
 func requestGET(path string) (request *http.Request) {
@@ -128,6 +126,7 @@ func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tempDirName := createTempDirInCurrentwd(t, mode)
 	tempWd := path.Join(wd, tempDirName)
+	t.Logf("tmpwd %s", tempWd)
 	if err := os.Chdir(tempWd); err != nil {
 		t.Fatalf("couldnt change wd to %s: %s", tempWd, err)
 	}
@@ -137,6 +136,7 @@ func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
 func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tmpdir, err := ioutil.TempDir(wd, "gone_test_")
+	t.Logf("tmpdir %s", tmpdir)
 	if err != nil {
 		t.Fatalf("couldnt create tempdir in %s: %s", wd, err)
 	}
@@ -150,6 +150,7 @@ func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
 func createTempFileInCurrentwd(t *testing.T, mode os.FileMode) string {
 	wd := getwd(t)
 	tmpfile, err := ioutil.TempFile(wd, "gone_test_")
+	t.Logf("tmpfile %s", tmpfile)
 	if err != nil {
 		t.Fatalf("couldnt create tempfile in %s: %s", wd, err)
 	}
@@ -174,6 +175,7 @@ func removeTempSymlinkFromCurrentwd(t *testing.T, symlinkName string) {
 
 func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
 	newwd := path.Dir(getwd(t))
+	t.Logf("removewd %s -> %s", tmpdir, newwd)
 	if err := os.Chdir(newwd); err != nil {
 		t.Fatalf("couldnt chdir to %s: %s", newwd, err)
 	}
@@ -183,7 +185,8 @@ func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
 func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {
 	wd := getwd(t)
 	tmpdirPath := path.Join(wd, tmpdir)
-	err := os.RemoveAll(tmpdirPath)
+	t.Logf("removedir %s", tmpdirPath)
+	err := os.Remove(tmpdirPath)
 	if err != nil {
 		t.Fatalf("couldnt remove tmpdir %s: %s", tmpdirPath, err)
 	}
@@ -192,7 +195,7 @@ func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {
 func removeTempFileFromCurrentwd(t *testing.T, tmpfile string) {
 	wd := getwd(t)
 	tmpfilePath := path.Join(wd, tmpfile)
-	err := os.RemoveAll(tmpfilePath)
+	err := os.Remove(tmpfilePath)
 	if err != nil {
 		t.Fatalf("couldn remove tmpfile %s: %s", tmpfilePath, err)
 	}

@@ -1,4 +1,4 @@
-package filer
+package store
 
 type AccessDeniedError string
 

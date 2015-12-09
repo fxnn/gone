@@ -2,23 +2,23 @@ package viewer
 
 import (
 	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/filer"
+	"github.com/fxnn/gone/store"
 	"log"
 	"net/http"
 )
 
 // The Viewer serves HTTP requests with content from the filesystem.
 type Viewer struct {
-	filer *filer.Filer
+	store store.Store
 }
 
 // New initializes a Viewer instance ready to use.
-func New(filer *filer.Filer) *Viewer {
-	return &Viewer{filer}
+func New(s store.Store) *Viewer {
+	return &Viewer{s}
 }
 
 func (v *Viewer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	if !v.filer.HasReadAccessForRequest(request) {
+	if !v.store.HasReadAccessForRequest(request) {
 		log.Printf("%s %s: no read permissions", request.Method, request.URL)
 		failer.ServeUnauthorized(writer, request)
 		return
@@ -38,11 +38,11 @@ func (v *Viewer) serveNonGET(writer http.ResponseWriter, request *http.Request) 
 
 func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 	var formatter = v.formatterForRequest(request)
-	var readCloser = v.filer.OpenReader(request)
-	if err := v.filer.Err(); err != nil {
+	var readCloser = v.store.OpenReader(request)
+	if err := v.store.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 
-		if filer.IsPathNotFoundError(err) {
+		if store.IsPathNotFoundError(err) {
 			failer.ServeNotFound(writer, request)
 			return
 		}
@@ -56,7 +56,7 @@ func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (v *Viewer) formatterForRequest(request *http.Request) formatter {
-	var mimeType = v.filer.MimeTypeForRequest(request)
-	v.filer.Err() // don't care for errors
+	var mimeType = v.store.MimeTypeForRequest(request)
+	v.store.Err() // don't care for errors
 	return mimeTypeFormatter(mimeType)
 }

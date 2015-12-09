@@ -1,4 +1,4 @@
-package filer
+package filestore
 
 import (
 	"fmt"
@@ -7,45 +7,43 @@ import (
 	"path"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/store"
 )
 
 // Maps incoming HTTP requests to the file system.
 type accessControl struct {
 	authenticator authenticator.Authenticator
-	basicFiler
+	*errStore
+	*basicFiler
 }
 
-func newAccessControl(authenticator authenticator.Authenticator) accessControl {
-	return accessControl{authenticator, newBasicFiler()}
-}
-
-func (a *accessControl) SetAuthenticator(authenticator authenticator.Authenticator) {
-	a.authenticator = authenticator
+func newAccessControl(a authenticator.Authenticator, s *errStore, f *basicFiler) *accessControl {
+	return &accessControl{a, s, f}
 }
 
 func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
-	if a.err != nil {
+	if a.hasErr() {
 		return
 	}
 	if !a.HasWriteAccessForRequest(request) {
 		var msg = fmt.Sprintf("Write access denied on %s", request.URL)
-		if a.err != nil {
+		if a.hasErr() {
 			msg = fmt.Sprintf("%s: %s", msg, a.err)
 		}
-		a.setErr(NewAccessDeniedError(msg))
+		a.setErr(store.NewAccessDeniedError(msg))
 	}
 }
 
 func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
-	if a.err != nil {
+	if a.hasErr() {
 		return
 	}
 	if !a.HasReadAccessForRequest(request) {
 		var msg = fmt.Sprintf("Read access denied on %s", request.URL)
-		if a.err != nil {
+		if a.hasErr() {
 			msg = fmt.Sprintf("%s: %s", msg, a.err)
 		}
-		a.setErr(NewAccessDeniedError(msg))
+		a.setErr(store.NewAccessDeniedError(msg))
 	}
 }
 
@@ -76,7 +74,7 @@ func (a *accessControl) hasWorldReadPermission(mode os.FileMode) bool {
 // getRelevantFileModeForPath returns the FileMode for the given file or, when
 // the file does not exist, its containing directory.
 func (a *accessControl) relevantFileModeForPath(p string) os.FileMode {
-	if a.err != nil {
+	if a.hasErr() {
 		return 0
 	}
 	info, err := os.Stat(p)

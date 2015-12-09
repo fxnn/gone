@@ -1,77 +1,45 @@
-package filer
+package filestore
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
+
+	"github.com/fxnn/gone/store"
 )
 
 // basicFiler implements basic algorithms and error handling needed when
 // dealing with files.
 // It basically wraps golang library functions for error handling.
 type basicFiler struct {
-	contentRootPath string
-	err             error
+	contentRoot string
+	*errStore
 }
 
-func newBasicFiler() basicFiler {
-	return basicFiler{
-		contentRootPath: "",
-		err:             nil,
+func newBasicFiler(contentRoot string, errStore *errStore) *basicFiler {
+	return &basicFiler{
+		contentRoot: contentRoot,
+		errStore:    errStore,
 	}
 }
 
-// SetContentRootPath changes the path to the directory all the content is in.
-func (f *basicFiler) SetContentRootPath(contentRootPath string) {
-	f.contentRootPath = f.normalizePath(contentRootPath)
-}
+func (f *basicFiler) stat(p string) (result os.FileInfo) {
+	if f.hasErr() {
+		return nil
+	}
 
-// Never forget to check for errors.
-// One call to this function resets the error state.
-func (f *basicFiler) Err() error {
-	var result = f.err
-	f.err = nil
+	if result, f.err = os.Stat(p); f.hasErr() {
+		return nil
+	}
+
 	return result
 }
 
-func (f *basicFiler) setErr(err error) {
-	f.err = wrapErr(err)
-}
-
-// WrapErr wraps f.err to a filer-specific error, if possible
-func wrapErr(err error) error {
-	if os.IsNotExist(err) {
-		if pathError, ok := err.(*os.PathError); ok {
-			return NewPathNotFoundError("path not found: " + pathError.Path)
-		}
-		return NewPathNotFoundError(fmt.Sprintf("path not found: %s", err))
-	}
-	return err
-}
-
-// FileSizeForRequest returns the size of the underlying file in bytes, if any,
-// or sets the Err() value.
-func (f *basicFiler) FileSizeForRequest(request *http.Request) int64 {
-	p := f.pathFromRequest(request)
-	if f.err != nil {
-		return -1
-	}
-
-	var info os.FileInfo
-	if info, f.err = os.Stat(p); f.err != nil {
-		return -1
-	}
-
-	return info.Size()
-}
-
 func (f *basicFiler) pathFromRequest(request *http.Request) string {
-	var p = f.guessExtension(f.normalizePath(path.Join(f.contentRootPath, request.URL.Path)))
-	if f.err != nil {
+	var p = f.guessExtension(f.normalizePath(path.Join(f.contentRoot, request.URL.Path)))
+	if f.hasErr() {
 		return p
 	}
 	if f.isDirectory(p) {
@@ -84,44 +52,15 @@ func (f *basicFiler) pathFromRequest(request *http.Request) string {
 // On success, it returns the path to the index document, otherwise it simply
 // returns the given path.
 func (f *basicFiler) indexForDirectory(dir string) string {
-	if f.err != nil {
+	if f.hasErr() {
 		return dir
 	}
 	var index = f.guessExtension(path.Join(dir, "index"))
 	f.assertPathExists(index)
-	if err := f.Err(); err != nil {
+	if err := f.errAndClear(); err != nil {
 		return dir
 	}
 	return index
-}
-
-func (f *basicFiler) assertPathValidForAnyAccess(p string) {
-	f.assertFileIsNotHidden(p)
-	f.assertPathInsideContentRoot(p)
-}
-
-func (f *basicFiler) assertFileIsNotHidden(p string) {
-	if f.err != nil {
-		return
-	}
-
-	if strings.HasPrefix(path.Base(p), ".") {
-		f.setErr(NewPathNotFoundError(fmt.Sprintf("%s is a hidden file and may not be displayed", p)))
-	}
-}
-
-func (f *basicFiler) assertPathInsideContentRoot(p string) {
-	if f.err != nil {
-		return
-	}
-
-	var normalizedPath = f.normalizePath(p)
-
-	if f.err == nil && !strings.HasPrefix(normalizedPath, f.contentRootPath) {
-		f.setErr(NewPathNotFoundError(
-			fmt.Sprintf("%s is not inside content root %s", p, f.contentRootPath),
-		))
-	}
 }
 
 // guessExtension tries to append the file extension, if missing.
@@ -132,10 +71,10 @@ func (f *basicFiler) assertPathInsideContentRoot(p string) {
 // match in alphabetic order.
 // Err() will not be set.
 func (f *basicFiler) guessExtension(p string) string {
-	if f.err != nil {
+	if f.hasErr() {
 		return p
 	}
-	if f.assertPathExists(p); f.Err() == nil {
+	if f.assertPathExists(p); f.errAndClear() == nil {
 		// don't apply for existing files
 		return p
 	}
@@ -150,7 +89,7 @@ func (f *basicFiler) guessExtension(p string) string {
 // normalizePath builds an absolute path and cleans it from ".." and ".", but
 // doesn't resolve symlinks
 func (f *basicFiler) normalizePath(path string) string {
-	if f.err != nil {
+	if f.hasErr() {
 		return path
 	}
 
@@ -158,7 +97,7 @@ func (f *basicFiler) normalizePath(path string) string {
 }
 
 func (f *basicFiler) absPath(path string) (absPath string) {
-	if f.err != nil {
+	if f.hasErr() {
 		return path
 	}
 	absPath, err := filepath.Abs(path)
@@ -167,11 +106,11 @@ func (f *basicFiler) absPath(path string) (absPath string) {
 }
 
 func (f *basicFiler) assertPathExists(path string) {
-	if f.err != nil {
+	if f.hasErr() {
 		return
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		f.setErr(NewPathNotFoundError(err.Error()))
+		f.setErr(store.NewPathNotFoundError(err.Error()))
 	}
 }
 
@@ -186,7 +125,7 @@ func (f *basicFiler) isDirectory(path string) bool {
 }
 
 func (f *basicFiler) evalSymlinks(path string) (hardPath string) {
-	if f.err != nil {
+	if f.hasErr() {
 		return path
 	}
 	hardPath, err := filepath.EvalSymlinks(path)
@@ -195,7 +134,7 @@ func (f *basicFiler) evalSymlinks(path string) (hardPath string) {
 }
 
 func (f *basicFiler) cleanPath(path string) string {
-	if f.err != nil {
+	if f.hasErr() {
 		return path
 	}
 	return filepath.Clean(path)
