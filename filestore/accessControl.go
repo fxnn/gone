@@ -10,15 +10,16 @@ import (
 	"github.com/fxnn/gone/store"
 )
 
-// Maps incoming HTTP requests to the file system.
+// accessControl implements permission checking for incoming requests
+// based on the file system's permissions.
 type accessControl struct {
 	authenticator authenticator.Authenticator
+	*pathIO
 	*errStore
-	*basicFiler
 }
 
-func newAccessControl(a authenticator.Authenticator, s *errStore, f *basicFiler) *accessControl {
-	return &accessControl{a, s, f}
+func newAccessControl(a authenticator.Authenticator, p *pathIO, s *errStore) *accessControl {
+	return &accessControl{a, p, s}
 }
 
 func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {

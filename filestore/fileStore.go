@@ -10,10 +10,9 @@ import (
 
 // fileStore implements the storage using plain file system.
 type fileStore struct {
+	*errStore
 	*ioUtil
 	*pathIO
-	*basicFiler
-	*errStore
 	*mimeDetector
 	*accessControl
 }
@@ -21,14 +20,18 @@ type fileStore struct {
 // New initializes a zeroe'd instance ready to use.
 func New(contentRoot string, authenticator authenticator.Authenticator) store.Store {
 	var s = newErrStore()
-	var f = newBasicFiler(contentRoot, s)
 	var i = newIOUtil(s)
-	var p = newPathIO(f, s)
-	var m = newMimeDetector(p, f, s)
-	var a = newAccessControl(authenticator, s, f)
-	return &fileStore{i, p, f, s, m, a}
+	var p = newPathIO(contentRoot, s)
+	var m = newMimeDetector(p, s)
+	var a = newAccessControl(authenticator, p, s)
+	return &fileStore{s, i, p, m, a}
 }
 
+// Err returns and clears the recorder error.
+//
+// As soon as an error inside the filestore occurs, all operations turn into
+// no-ops.
+// Use this method to regularly check for errors.
 func (f *fileStore) Err() error {
 	return f.errAndClear()
 }
@@ -37,7 +40,7 @@ func (f *fileStore) MimeTypeForRequest(request *http.Request) string {
 	if f.hasErr() {
 		return ""
 	}
-	return f.mimeTypeForPath(f.pathFromRequest(request).EvalSymlinks())
+	return f.mimeTypeForPath(f.pathFromRequest(request))
 }
 
 // FileSizeForRequest returns the size of the underlying file in bytes, if any,

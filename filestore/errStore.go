@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
 )
 
@@ -44,4 +45,19 @@ func (s *errStore) wrapErr(err error) error {
 		return store.NewPathNotFoundError(fmt.Sprintf("path not found: %s", err))
 	}
 	return err
+}
+
+// syncedErrs couples GoPath's error handling with errStore's error handling.
+// When the GoPath contained an error, it will be stored in the errStore, so
+// that all following ops become no-ops.
+// When however the errStore contains an error, an errorneous GoPath will be
+// returned.
+func (f *errStore) syncedErrs(p gopath.GoPath) gopath.GoPath {
+	if f.hasErr() {
+		return gopath.FromErr(f.err)
+	}
+	if p.HasErr() {
+		f.setErr(p.Err())
+	}
+	return p
 }

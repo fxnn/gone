@@ -4,21 +4,21 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/fxnn/gone/store"
 	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gone/store"
 )
 
 type mimeDetector struct {
 	*pathIO
-	*basicFiler
 	*errStore
 }
 
-func newMimeDetector(p *pathIO, f *basicFiler, s *errStore) *mimeDetector {
-	return &mimeDetector{p, f, s}
+func newMimeDetector(p *pathIO, s *errStore) *mimeDetector {
+	return &mimeDetector{p, s}
 }
 
 func (m *mimeDetector) mimeTypeForPath(p gopath.GoPath) string {
+	p = p.EvalSymlinks()
 	if p.IsDirectory() || p.HasErr() {
 		return store.FallbackMimeType
 	}
