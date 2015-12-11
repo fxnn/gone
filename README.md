@@ -92,6 +92,7 @@ Gone imports code from following projects:
 
 * [abbot/go-http-auth](https://github.com/abbot/go-http-auth) for HTTP basic authentication
 * [gorilla](https://github.com/gorilla), a great web toolkit for Go, used for sessions and cookies
+* [mjibson/esc](https://github.com/mjibson/esc) for embedding files into the binary
 * [russross/blackfriday](https://github.com/russross/blackfriday), a well-made markdown processor for Go
 * [shurcooL/sanitized_anchor_name](https://github.com/shurcooL/sanitized_anchor_name) for making strings URL-compatible
 * [golang.org/x/crypto](https://golang.org/x/crypto) for session-related cryptography
