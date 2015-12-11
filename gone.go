@@ -49,7 +49,7 @@ func htpasswdFilePath(contentRootPath string) string {
 func getwd() string {
 	if wd, err := os.Getwd(); err == nil {
 		return wd
+	} else {
+		panic(err)
 	}
-
-	panic(err)
 }
