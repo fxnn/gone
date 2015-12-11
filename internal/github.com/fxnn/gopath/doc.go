@@ -1,4 +1,4 @@
-// gopath package implements an alternative API to Go's path processing
+// Package gopath implements an alternative API to Go's path processing
 // libraries.
 // What's special to gopath is its ability to write path processing in a fluent
 // way while doing error handling later.

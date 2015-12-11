@@ -15,7 +15,7 @@ type GoPath struct {
 	fileInfo os.FileInfo
 }
 
-var empty GoPath = GoPath{}
+var empty = GoPath{}
 
 // Empty returns the empty GoPath.
 func Empty() GoPath {
@@ -50,9 +50,9 @@ func (g GoPath) withFileInfo(fileInfo os.FileInfo) GoPath {
 	return GoPath{g.path, g.err, fileInfo}
 }
 
-type GoPathTransformer func(GoPath) GoPath
+type Transformer func(GoPath) GoPath
 
-func (g GoPath) Do(transformer GoPathTransformer) GoPath {
+func (g GoPath) Do(transformer Transformer) GoPath {
 	if g.HasErr() {
 		return g
 	}
