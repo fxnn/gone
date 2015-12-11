@@ -79,7 +79,24 @@ Some day, Gone might be able to
 
 ## Development
 
-If you want to modify sources in this project, please note that the project uses the vendoring tool http://github.com/kardianos/govendor.
+If you want to modify sources in this project, you might find the following information helpful.
+
+
+### Third party software
+
+Please note that the project uses the vendoring tool https://github.com/kardianos/govendor.
+Consequently, all external projects are vendored and to be found in the `internal` folder.
+A list of projects and versions is managed under [internal/vendor.json](internal/vendor.json)
+
+Gone imports code from following projects:
+
+* [abbot/go-http-auth](https://github.com/abbot/go-http-auth) for HTTP basic authentication
+* [gorilla](https://github.com/gorilla), a great web toolkit for Go, used for sessions and cookies
+* [russross/blackfriday](https://github.com/russross/blackfriday), a well-made markdown processor for Go
+* [shurcooL/sanitized_anchor_name](https://github.com/shurcooL/sanitized_anchor_name) for making strings URL-compatible
+* [golang.org/x/crypto](https://golang.org/x/crypto) for session-related cryptography
+* [golang.org/x/net/context](https://golang.org/x/net/context) for request-scoped values
+* [fxnn/gopath](https://github.com/fxnn/gopath) for easy handling of filesystem paths
 
 
 ### Architecture
