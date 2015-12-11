@@ -1,4 +1,4 @@
-// filestore package implements the storage via filesystem.
+// Package filestore implements the storage via filesystem.
 // Provided features are reading and writing content, creating and deleting
 // files as well as realization of access control.
 //

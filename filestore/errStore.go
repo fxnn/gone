@@ -52,12 +52,12 @@ func (s *errStore) wrapErr(err error) error {
 // that all following ops become no-ops.
 // When however the errStore contains an error, an errorneous GoPath will be
 // returned.
-func (f *errStore) syncedErrs(p gopath.GoPath) gopath.GoPath {
-	if f.hasErr() {
-		return gopath.FromErr(f.err)
+func (s *errStore) syncedErrs(p gopath.GoPath) gopath.GoPath {
+	if s.hasErr() {
+		return gopath.FromErr(s.err)
 	}
 	if p.HasErr() {
-		f.setErr(p.Err())
+		s.setErr(p.Err())
 	}
 	return p
 }

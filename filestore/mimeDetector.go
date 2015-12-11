@@ -43,7 +43,7 @@ func (m *mimeDetector) first512BytesForPath(p gopath.GoPath) []byte {
 	if m.hasErr() {
 		return nil
 	}
-	var buf []byte = make([]byte, 512)
+	var buf = make([]byte, 512)
 	var n int
 	n, m.err = readCloser.Read(buf)
 	readCloser.Close()

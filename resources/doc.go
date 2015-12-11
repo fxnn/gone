@@ -1,4 +1,4 @@
-// The resources package manages non-code data used by the application.
+// Package resources manages non-code data used by the application.
 // Notably, there is a set of files bundled in the gone executable.
 // Those files are kept in the "static" subdirectory.
 //

@@ -25,7 +25,7 @@ type Editor struct {
 	template templates.EditorTemplate
 }
 
-// Initializes a new instance ready to use.
+// New initializes a new instance ready to use.
 // The instance includes a loaded and parsed template.
 func New(s store.Store) *Editor {
 	var template = templates.LoadEditorTemplate()
