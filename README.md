@@ -128,3 +128,8 @@ Both use a set of backend packages.
 * The `failer` package delivers error pages for HTTP requests.
 
 See the [Godoc](http://godoc.org/github.com/fxnn/gone) for more information.
+
+
+## License (MIT)
+
+Licensed under the MIT License, see [LICENSE](LICENSE) file for more information.
