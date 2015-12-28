@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/filer"
 	"github.com/fxnn/gone/router"
+	"github.com/fxnn/gone/store"
 	"github.com/fxnn/gone/templates"
 )
 
@@ -21,23 +21,23 @@ const (
 // While the UI itself is implemented in a HTML template, this type
 // implements the logic behind the UI.
 type Editor struct {
-	filer    *filer.Filer
+	store    store.Store
 	template templates.EditorTemplate
 }
 
-// Initializes a new instance ready to use.
+// New initializes a new instance ready to use.
 // The instance includes a loaded and parsed template.
-func New(filer *filer.Filer) *Editor {
+func New(s store.Store) *Editor {
 	var template = templates.LoadEditorTemplate()
 	if err := template.Err(); err != nil {
 		panic(err)
 	}
 
-	return &Editor{filer, template}
+	return &Editor{s, template}
 }
 
 func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	if !e.filer.HasWriteAccessForRequest(request) {
+	if !e.store.HasWriteAccessForRequest(request) {
 		log.Printf("%s %s: no write permissions", request.Method, request.URL)
 		failer.ServeUnauthorized(writer, request)
 		return
@@ -48,7 +48,7 @@ func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if !e.filer.HasReadAccessForRequest(request) {
+	if !e.store.HasReadAccessForRequest(request) {
 		log.Printf("%s %s: no read permissions", request.Method, request.URL)
 		failer.ServeUnauthorized(writer, request)
 		return
@@ -71,8 +71,8 @@ func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	e.filer.WriteString(request, content)
-	if err := e.filer.Err(); err != nil {
+	e.store.WriteString(request, content)
+	if err := e.store.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)
 		return
@@ -94,9 +94,9 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var content = e.filer.ReadString(request)
-	if err := e.filer.Err(); err != nil {
-		if !filer.IsPathNotFoundError(err) {
+	var content = e.store.ReadString(request)
+	if err := e.store.Err(); err != nil {
+		if !store.IsPathNotFoundError(err) {
 			log.Printf("%s %s: %s", request.Method, request.URL, err)
 			failer.ServeInternalServerError(writer, request)
 			return
@@ -122,8 +122,8 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (e *Editor) assertEditableTextFile(request *http.Request) error {
-	bytes := e.filer.FileSizeForRequest(request)
-	if err := e.filer.Err(); err != nil && os.IsNotExist(err) {
+	bytes := e.store.FileSizeForRequest(request)
+	if err := e.store.Err(); err != nil && os.IsNotExist(err) {
 		// HINT: doesn't exist; that's pretty editable
 		return nil
 	}
@@ -134,8 +134,8 @@ func (e *Editor) assertEditableTextFile(request *http.Request) error {
 			bytes, maxEditableBytes)
 	}
 
-	mimeType := e.filer.MimeTypeForRequest(request)
-	if e.filer.Err() == nil && strings.HasPrefix(mimeType, "text/") {
+	mimeType := e.store.MimeTypeForRequest(request)
+	if e.store.Err() == nil && strings.HasPrefix(mimeType, "text/") {
 		return nil
 	}
 

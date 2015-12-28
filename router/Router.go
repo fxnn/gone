@@ -6,12 +6,15 @@ import (
 	"net/http"
 )
 
+// Router encapsulates http.Handler instances for all relevant views and
+// invokes the right one for each request.
 type Router struct {
 	editor        http.Handler
 	viewer        http.Handler
 	authenticator http.Handler
 }
 
+// New constructs a new instance ready to use.
 func New(viewer http.Handler, editor http.Handler, authenticator http.Handler) *Router {
 	return &Router{editor, viewer, authenticator}
 }

@@ -1,4 +1,4 @@
-package filer
+package store
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	FallbackMimeType = "application/octet-stream"
 	MarkdownMimeType = "text/markdown"
 )
 

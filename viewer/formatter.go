@@ -5,7 +5,7 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/fxnn/gone/filer"
+	"github.com/fxnn/gone/store"
 )
 
 type formatter interface {
@@ -13,7 +13,7 @@ type formatter interface {
 }
 
 var formatterByMimeType = map[string]formatter{
-	filer.MarkdownMimeType: newMarkdownFormatter(),
+	store.MarkdownMimeType: newMarkdownFormatter(),
 }
 
 func mimeTypeFormatter(mediaType string) formatter {

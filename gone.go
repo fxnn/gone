@@ -9,10 +9,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/editor"
-	"github.com/fxnn/gone/filer"
+	"github.com/fxnn/gone/filestore"
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
 
@@ -20,29 +21,29 @@ import (
 )
 
 func main() {
-	var filer, authenticator = filerAndAuthenticator()
+	var contentRoot = getwd()
+	var htpasswdFilePath = htpasswdFilePath(contentRoot)
 
-	var viewer = viewer.New(filer)
-	var editor = editor.New(filer)
-	var router = router.New(viewer, editor, authenticator)
+	var auth = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
+	var store = filestore.New(contentRoot, auth)
 
-	var handlerChain = context.ClearHandler(authenticator.AuthHandler(router))
+	var viewer = viewer.New(store)
+	var editor = editor.New(store)
+	var router = router.New(viewer, editor, auth)
+
+	var handlerChain = context.ClearHandler(auth.AuthHandler(router))
 
 	log.Fatal(http.ListenAndServe(":8080", handlerChain))
 }
 
-func filerAndAuthenticator() (f *filer.Filer, a *authenticator.HttpBasicAuthenticator) {
-	f = filer.New(authenticator.NewNeverAuthenticated())
-	f.SetContentRootPath(getwd())
-	var htpasswdFilePath = f.HtpasswdFilePath()
-	if err := f.Err(); err != nil {
+func htpasswdFilePath(contentRootPath string) string {
+	htpasswdFilePath := path.Join(contentRootPath, ".htpasswd")
+	if _, err := os.Stat(htpasswdFilePath); err != nil && os.IsNotExist(err) {
 		log.Printf("no .htpasswd found")
-	} else {
-		log.Printf("using authentication data from .htpasswd")
+		return ""
 	}
-	a = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
-	f.SetAuthenticator(a)
-	return
+	log.Printf("using authentication data from .htpasswd")
+	return htpasswdFilePath
 }
 
 func getwd() string {

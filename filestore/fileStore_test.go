@@ -1,4 +1,4 @@
-package filer
+package filestore
 
 import (
 	"io"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/store"
 )
 
 // https://github.com/fxnn/gone/issues/7 No.2 positive
@@ -23,6 +24,7 @@ func TestOpenWriterSupportsCreatingFiles(t *testing.T) {
 	if err := sut.Err(); err != nil {
 		t.Fatalf("failed to open file for writing: %s", err)
 	}
+	removeTempFileFromCurrentwd(t, tmpdir+"/newFile")
 }
 
 // https://github.com/fxnn/gone/issues/7 No.2 negative write
@@ -34,7 +36,7 @@ func TestOpenWriterDeniesWhenWorldWritePermissionIsMissing(t *testing.T) {
 
 	writeCloser := sut.OpenWriter(requestGET("/" + tmpfile))
 	closed(writeCloser)
-	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }
@@ -96,7 +98,7 @@ func TestOpenReaderInsideDirectoryDeniesOnMissingReadPermission(t *testing.T) {
 
 	readCloser := sut.OpenReader(requestGET("/" + tmpdir + "/" + tmpfile))
 	closed(readCloser)
-	if err := sut.Err(); err == nil || !IsAccessDeniedError(err) {
+	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)
 	}
 }
@@ -117,8 +119,8 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 func TestAccessToParentDirDenied(t *testing.T) {
 	tempFile := createTempFileInCurrentwd(t, 0777)
 	tempWd := createTempWdInCurrentwd(t, 0777)
-	defer removeTempWdFromCurrentwd(t, tempWd)
 	defer removeTempFileFromCurrentwd(t, tempFile)
+	defer removeTempWdFromCurrentwd(t, tempWd)
 
 	sut := sutAuthenticated(t)
 
@@ -126,7 +128,7 @@ func TestAccessToParentDirDenied(t *testing.T) {
 	closed(readCloser)
 	if err := sut.Err(); err == nil {
 		t.Fatalf("could open reader for parent dir of working directory %s", getwd(t))
-	} else if !IsPathNotFoundError(err) {
+	} else if !store.IsPathNotFoundError(err) {
 		t.Fatalf("expected PathNotFoundError: %s", err)
 	}
 }
@@ -148,16 +150,12 @@ func TestAccessToSymlinkToParentDirAllowed(t *testing.T) {
 	}
 }
 
-func sutNotAuthenticated(t *testing.T) *Filer {
-	var sut = New(authenticator.NewNeverAuthenticated())
-	sut.SetContentRootPath(getwd(t))
-	return sut
+func sutNotAuthenticated(t *testing.T) store.Store {
+	return New(getwd(t), authenticator.NewNeverAuthenticated())
 }
 
-func sutAuthenticated(t *testing.T) *Filer {
-	var sut = New(authenticator.NewAlwaysAuthenticated())
-	sut.SetContentRootPath(getwd(t))
-	return sut
+func sutAuthenticated(t *testing.T) store.Store {
+	return New(getwd(t), authenticator.NewAlwaysAuthenticated())
 }
 
 func requestGET(path string) (request *http.Request) {
@@ -234,7 +232,7 @@ func removeTempWdFromCurrentwd(t *testing.T, tmpdir string) {
 func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {
 	wd := getwd(t)
 	tmpdirPath := path.Join(wd, tmpdir)
-	err := os.RemoveAll(tmpdirPath)
+	err := os.Remove(tmpdirPath)
 	if err != nil {
 		t.Fatalf("couldnt remove tmpdir %s: %s", tmpdirPath, err)
 	}
@@ -243,7 +241,7 @@ func removeTempDirFromCurrentwd(t *testing.T, tmpdir string) {
 func removeTempFileFromCurrentwd(t *testing.T, tmpfile string) {
 	wd := getwd(t)
 	tmpfilePath := path.Join(wd, tmpfile)
-	err := os.RemoveAll(tmpfilePath)
+	err := os.Remove(tmpfilePath)
 	if err != nil {
 		t.Fatalf("couldn remove tmpfile %s: %s", tmpfilePath, err)
 	}

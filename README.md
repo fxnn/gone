@@ -79,7 +79,25 @@ Some day, Gone might be able to
 
 ## Development
 
-If you want to modify sources in this project, please note that the project uses the vendoring tool http://github.com/kardianos/govendor.
+If you want to modify sources in this project, you might find the following information helpful.
+
+
+### Third party software
+
+Please note that the project uses the vendoring tool https://github.com/kardianos/govendor.
+Consequently, all external projects are vendored and to be found in the `internal` folder.
+A list of projects and versions is managed under [internal/vendor.json](internal/vendor.json)
+
+Gone imports code from following projects:
+
+* [abbot/go-http-auth](https://github.com/abbot/go-http-auth) for HTTP basic authentication
+* [gorilla](https://github.com/gorilla), a great web toolkit for Go, used for sessions and cookies
+* [mjibson/esc](https://github.com/mjibson/esc) for embedding files into the binary
+* [russross/blackfriday](https://github.com/russross/blackfriday), a well-made markdown processor for Go
+* [shurcooL/sanitized_anchor_name](https://github.com/shurcooL/sanitized_anchor_name) for making strings URL-compatible
+* [golang.org/x/crypto](https://golang.org/x/crypto) for session-related cryptography
+* [golang.org/x/net/context](https://golang.org/x/net/context) for request-scoped values
+* [fxnn/gopath](https://github.com/fxnn/gopath) for easy handling of filesystem paths
 
 
 ### Architecture
@@ -102,7 +120,7 @@ While the `editor` serves the editing UI, the `viewer` is responsible for
 serving whatever file is requested.
 
 Both use a set of backend packages.
-* The `filer` encapsulates mapping requests to the filesystem as well as reading
+* The `filestore` encapsulates mapping requests to the filesystem as well as reading
   and writing the files themselves.
 * The `templates` package caches and renders the templates used for HTML output.
 * The `resources` package encapsulates access to static resources, which are
@@ -110,3 +128,8 @@ Both use a set of backend packages.
 * The `failer` package delivers error pages for HTTP requests.
 
 See the [Godoc](http://godoc.org/github.com/fxnn/gone) for more information.
+
+
+## License (MIT)
+
+Licensed under the MIT License, see [LICENSE](LICENSE) file for more information.

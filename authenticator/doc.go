@@ -1,4 +1,4 @@
-// The authenticator package allows to identify a user.
+// Package authenticator allows to identify a user.
 // That is, the package implements the logic behind login functionality
 // as well as the session logic used to identify the user in all following
 // requests.

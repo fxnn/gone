@@ -1,51 +1,50 @@
-package filer
+package filestore
 
 import (
 	"fmt"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gone/store"
 )
 
-// Maps incoming HTTP requests to the file system.
+// accessControl implements permission checking for incoming requests
+// based on the file system's permissions.
 type accessControl struct {
 	authenticator authenticator.Authenticator
-	basicFiler
+	*pathIO
+	*errStore
 }
 
-func newAccessControl(authenticator authenticator.Authenticator) accessControl {
-	return accessControl{authenticator, newBasicFiler()}
-}
-
-func (a *accessControl) SetAuthenticator(authenticator authenticator.Authenticator) {
-	a.authenticator = authenticator
+func newAccessControl(a authenticator.Authenticator, p *pathIO, s *errStore) *accessControl {
+	return &accessControl{a, p, s}
 }
 
 func (a *accessControl) assertHasWriteAccessForRequest(request *http.Request) {
-	if a.err != nil {
+	if a.hasErr() {
 		return
 	}
 	if !a.HasWriteAccessForRequest(request) {
 		var msg = fmt.Sprintf("Write access denied on %s", request.URL)
-		if a.err != nil {
+		if a.hasErr() {
 			msg = fmt.Sprintf("%s: %s", msg, a.err)
 		}
-		a.setErr(NewAccessDeniedError(msg))
+		a.setErr(store.NewAccessDeniedError(msg))
 	}
 }
 
 func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
-	if a.err != nil {
+	if a.hasErr() {
 		return
 	}
 	if !a.HasReadAccessForRequest(request) {
 		var msg = fmt.Sprintf("Read access denied on %s", request.URL)
-		if a.err != nil {
+		if a.hasErr() {
 			msg = fmt.Sprintf("%s: %s", msg, a.err)
 		}
-		a.setErr(NewAccessDeniedError(msg))
+		a.setErr(store.NewAccessDeniedError(msg))
 	}
 }
 
@@ -75,18 +74,15 @@ func (a *accessControl) hasWorldReadPermission(mode os.FileMode) bool {
 
 // getRelevantFileModeForPath returns the FileMode for the given file or, when
 // the file does not exist, its containing directory.
-func (a *accessControl) relevantFileModeForPath(p string) os.FileMode {
-	if a.err != nil {
+func (a *accessControl) relevantFileModeForPath(p gopath.GoPath) os.FileMode {
+	if a.hasErr() || p.HasErr() {
 		return 0
 	}
-	info, err := os.Stat(p)
-	if err != nil && os.IsNotExist(err) {
+	var pStat = p.Stat()
+	if !pStat.IsExists() {
 		// HINT: Inspect permissions of containing directory
-		info, err = os.Stat(path.Dir(p))
+		pStat = p.Dir().Stat()
 	}
-	if err != nil {
-		a.setErr(err)
-		return 0
-	}
-	return info.Mode()
+	a.setErr(pStat.Err())
+	return pStat.FileMode()
 }
