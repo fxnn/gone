@@ -4,7 +4,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/fxnn/gone/internal/golang.org/x/net/context"
+	"golang.org/x/net/context"
 )
 
 /*

@@ -1,7 +1,7 @@
 package context
 
 import (
-	"github.com/fxnn/gone/internal/github.com/gorilla/context"
+	"github.com/gorilla/context"
 	"net/http"
 )
 

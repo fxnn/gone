@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fxnn/gone/context"
-	"github.com/fxnn/gone/internal/github.com/abbot/go-http-auth"
+	"github.com/abbot/go-http-auth"
 	"github.com/fxnn/gone/router"
 )
 

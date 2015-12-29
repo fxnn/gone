@@ -17,7 +17,7 @@ import (
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/viewer"
 
-	"github.com/fxnn/gone/internal/github.com/gorilla/context"
+	"github.com/gorilla/context"
 )
 
 func main() {

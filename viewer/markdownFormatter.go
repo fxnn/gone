@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/internal/github.com/russross/blackfriday"
+	"github.com/russross/blackfriday"
 	"github.com/fxnn/gone/templates"
 )
 

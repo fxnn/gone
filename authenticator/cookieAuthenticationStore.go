@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fxnn/gone/internal/github.com/gorilla/securecookie"
-	"github.com/fxnn/gone/internal/github.com/gorilla/sessions"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
 const (

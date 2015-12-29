@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fxnn/gone/internal/golang.org/x/net/context"
+	"golang.org/x/net/context"
 )
 
 type digest_client struct {

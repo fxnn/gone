@@ -4,7 +4,7 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
 )
 
