@@ -125,3 +125,12 @@ func (i *pathIO) guessExtension(p gopath.GoPath) gopath.GoPath {
 func (i *pathIO) normalizePath(p gopath.GoPath) gopath.GoPath {
 	return p.Abs().Clean()
 }
+
+// pathComponentsTo returns a list of all path components between the content
+// root directory and the given file.
+//
+// For example, a file "dir/file.ext" inside the content root will return both
+// "dir" and "file.ext" as components.
+func (i *pathIO) pathComponentsTo(p gopath.GoPath) []string {
+	return i.contentRoot.Rel(p).Components()
+}

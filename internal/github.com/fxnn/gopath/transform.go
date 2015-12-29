@@ -57,9 +57,11 @@ func (g GoPath) Stat() GoPath {
 }
 
 // Abs calls filepath.Abs() on the path.
+//
 // If the path is already absolute, it returns the path itself.
 // Otherwise, it returns an absolute representation of the path using the
 // current working directory.
+//
 // If an error occurs, it returns an errorneous GoPath.
 func (g GoPath) Abs() GoPath {
 	if g.HasErr() {
@@ -75,6 +77,7 @@ func (g GoPath) Abs() GoPath {
 
 // EvalSymlinks calls filepath.EvalSymlinks().
 // It evaluates any symlinks in the path.
+//
 // If the path is relative, the result might be relative, too.
 // If an error occurs, it returns an errorneous GoPath.
 func (g GoPath) EvalSymlinks() GoPath {
@@ -101,6 +104,14 @@ func (g GoPath) Clean() GoPath {
 	return g.withPath(filepath.Clean(g.path))
 }
 
+// GlobAny runs Glob() and selects the first match.
+//
+// If any error occurs, it returns an errorneous GoPath.
+// Note, that -- according to https://godoc.org/path/filepath#Glob --
+// this may only occur when the glob expression is not formatted
+// correctly.
+//
+// If there is no match, an empty GoPath is returned.
 func (g GoPath) GlobAny() GoPath {
 	matches, err := g.Glob()
 	if err != nil {
@@ -110,4 +121,49 @@ func (g GoPath) GlobAny() GoPath {
 		return FromPath(matches[0])
 	}
 	return Empty()
+}
+
+// Rel returns the other (targpath) GoPath, expressed as path relative to this
+// GoPath.
+//
+// 		var base = gopath.FromPath("/a")
+//		var target = gopath.FromPath("/b/c")
+//		var rel = base.Rel(target)
+//
+//		assert.Equal(rel.Path(), "../b/c")
+//
+// Note that this func follows the argument order of the filepath.Rel func,
+// while the RelTo() func implements the reverse argument order.
+func (g GoPath) Rel(targpath GoPath) GoPath {
+	if g.HasErr() {
+		return g
+	}
+	if targpath.HasErr() {
+		return targpath
+	}
+
+	var result, err = filepath.Rel(g.Path(), targpath.Path())
+	if err != nil {
+		return targpath.withErr(err)
+	}
+	return targpath.withPath(result)
+}
+
+// RelTo returns this GoPath, expressed as path relative to the other (base)
+// GoPath.
+//
+// 		var base = gopath.FromPath("/a")
+//		var target = gopath.FromPath("/b/c")
+//		var rel = target.RelTo(base)
+//
+//		assert.Equal(rel.Path(), "../b/c")
+//
+// Note that this func uses the inverse argument order of the filepath.Rel func,
+// while the Rel() func implements the exact argument order.
+func (g GoPath) RelTo(base GoPath) GoPath {
+	if g.HasErr() {
+		return g
+	}
+
+	return base.Rel(g)
 }

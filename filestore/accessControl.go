@@ -50,18 +50,80 @@ func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
 
 func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
 	if a.authenticator.IsAuthenticated(request) {
+		// HINT: OK, as long as the gone process can read the file
 		return true
 	}
-	var mode = a.relevantFileModeForPath(a.pathFromRequest(request))
-	return a.err == nil && a.hasWorldWritePermission(mode)
+
+	var p = a.pathFromRequest(request)
+	if !a.canEnterAllParentDirectories(p) {
+		return false
+	}
+	if !p.IsExists() {
+		// HINT: Create file
+		return a.canWriteDirectory(p.Dir())
+	}
+	return a.canWriteFile(p)
 }
 
 func (a *accessControl) HasReadAccessForRequest(request *http.Request) bool {
 	if a.authenticator.IsAuthenticated(request) {
+		// HINT: OK, as long as the gone process can read the file
 		return true
 	}
-	var mode = a.relevantFileModeForPath(a.pathFromRequest(request))
-	return a.err == nil && a.hasWorldReadPermission(mode)
+
+	var p = a.pathFromRequest(request)
+	if !a.canEnterAllParentDirectories(p) {
+		return false
+	}
+	return a.canReadFile(p)
+}
+
+// hasAccessForAllParentDirectories returns true iff all parent directories can
+// be entered using world permissions.
+func (a *accessControl) canEnterAllParentDirectories(p gopath.GoPath) bool {
+	var parentDir = a.contentRoot
+
+	// NOTE: Implicitly skips the last path component, which isn't a parent directory
+	for _, component := range a.pathComponentsTo(p) {
+		if !a.canEnterDirectory(parentDir) {
+			return false
+		}
+		parentDir = parentDir.JoinPath(component)
+	}
+
+	return true
+}
+
+func (a *accessControl) canEnterDirectory(p gopath.GoPath) bool {
+	if p.HasErr() || !p.IsDirectory() {
+		return false
+	}
+	return a.hasWorldExecutePermission(p.FileMode())
+}
+
+func (a *accessControl) canWriteDirectory(p gopath.GoPath) bool {
+	if p.HasErr() || !p.IsDirectory() {
+		return false
+	}
+	return a.hasWorldWritePermission(p.FileMode())
+}
+
+func (a *accessControl) canReadFile(p gopath.GoPath) bool {
+	if p.HasErr() || !p.IsRegular() {
+		return false
+	}
+	return a.hasWorldReadPermission(p.FileMode())
+}
+
+func (a *accessControl) canWriteFile(p gopath.GoPath) bool {
+	if p.HasErr() || !p.IsRegular() {
+		return false
+	}
+	return a.hasWorldWritePermission(p.FileMode())
+}
+
+func (a *accessControl) hasWorldExecutePermission(mode os.FileMode) bool {
+	return mode&0001 != 0
 }
 
 func (a *accessControl) hasWorldWritePermission(mode os.FileMode) bool {
