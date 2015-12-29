@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/fxnn/gone/failer"
@@ -123,7 +122,7 @@ func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
 
 func (e *Editor) assertEditableTextFile(request *http.Request) error {
 	bytes := e.store.FileSizeForRequest(request)
-	if err := e.store.Err(); err != nil && os.IsNotExist(err) {
+	if err := e.store.Err(); err != nil && store.IsPathNotFoundError(err) {
 		// HINT: doesn't exist; that's pretty editable
 		return nil
 	}

@@ -48,6 +48,7 @@ func (f *fileStore) MimeTypeForRequest(request *http.Request) string {
 func (f *fileStore) FileSizeForRequest(request *http.Request) int64 {
 	p := f.pathFromRequest(request).Stat()
 	if p.HasErr() {
+		f.setErr(p.Err())
 		return -1
 	}
 
