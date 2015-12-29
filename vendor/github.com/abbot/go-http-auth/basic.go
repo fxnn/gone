@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fxnn/gone/internal/golang.org/x/crypto/bcrypt"
-	"github.com/fxnn/gone/internal/golang.org/x/net/context"
+	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/net/context"
 )
 
 type compareFunc func(hashedPassword, password []byte) error

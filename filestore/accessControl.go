@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
-	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
 )
 

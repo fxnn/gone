@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fxnn/gone/internal/github.com/fxnn/gopath"
+	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
 )
 
