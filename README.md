@@ -85,8 +85,9 @@ If you want to modify sources in this project, you might find the following info
 ### Third party software
 
 Please note that the project uses the vendoring tool https://github.com/kardianos/govendor.
-Consequently, all external projects are vendored and to be found in the `internal` folder.
-A list of projects and versions is managed under [internal/vendor.json](internal/vendor.json)
+Also, we use the standard go `vendor` folder, which means that all external projects are vendored and to be found in the `vendor` folder.
+A list of projects and versions is managed under [vendor/vendor.json](vendor/vendor.json).
+If you build with go-1.5, enable the [GO15VENDOREXPERIMENT](https://golang.org/s/go15vendor) flag.
 
 Gone imports code from following projects:
 
