@@ -1,11 +1,14 @@
 language: go
 
-env:
-  - GO15VENDOREXPERIMENT=1
-
 go:
-  #- tip
+  - tip
   - 1.6beta1
-  - 1.5.2
-  - 1.5.1
-  - 1.5
+
+matrix:
+  include:
+    - go: 1.5.2
+      env: GO15VENDOREXPERIMENT=1
+      # HINT: go-1.5.x needs GO15VENDOREXPERIMENT, therefore specify it via "include"
+  allow_failures:
+    - go: tip
+      # HINT: this is only for interest -- decision to support new versions is made manually
