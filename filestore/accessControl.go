@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
-	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 // accessControl implements permission checking for incoming requests
@@ -48,6 +48,19 @@ func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
 	}
 }
 
+func (a *accessControl) assertHasDeleteAccessForRequest(request *http.Request) {
+	if a.hasErr() {
+		return
+	}
+	if !a.HasDeleteAccessForRequest(request) {
+		var msg = fmt.Sprintf("Delete access denied on %s", request.URL)
+		if a.hasErr() {
+			msg = fmt.Sprintf("%s: %s", msg, a.err)
+		}
+		a.setErr(store.NewAccessDeniedError(msg))
+	}
+}
+
 func (a *accessControl) HasWriteAccessForRequest(request *http.Request) bool {
 	if a.authenticator.IsAuthenticated(request) {
 		// HINT: OK, as long as the gone process can read the file
@@ -76,6 +89,20 @@ func (a *accessControl) HasReadAccessForRequest(request *http.Request) bool {
 		return false
 	}
 	return a.canReadFile(p)
+}
+
+func (a *accessControl) HasDeleteAccessForRequest(request *http.Request) bool {
+	if a.authenticator.IsAuthenticated(request) {
+		// HINT: OK, as long as the gone process can read the file
+		return true
+	}
+
+	var p = a.pathFromRequest(request)
+	if !a.canEnterAllParentDirectories(p) {
+		return false
+	}
+
+	return a.canWriteDirectory(p.Dir())
 }
 
 // hasAccessForAllParentDirectories returns true iff all parent directories can

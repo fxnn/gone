@@ -35,26 +35,35 @@ func New(s store.Store) *Editor {
 	return &Editor{s, template}
 }
 
+func (e *Editor) isServeWriter(request *http.Request) bool {
+	return request.Method == "POST"
+}
+
+func (e *Editor) isServeDeleter(request *http.Request) bool {
+	return request.Method == "GET" && router.IsModeDelete(request)
+}
+
+func (e *Editor) isServeEditUI(request *http.Request) bool {
+	return request.Method == "GET" && router.IsModeEdit(request)
+}
+
+func (e *Editor) isServeCreateUI(request *http.Request) bool {
+	return request.Method == "GET" && router.IsModeCreate(request)
+}
+
 func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	if !e.store.HasWriteAccessForRequest(request) {
-		log.Printf("%s %s: no write permissions", request.Method, request.URL)
-		failer.ServeUnauthorized(writer, request)
+	if e.isServeWriter(request) {
+		e.serveWriter(writer, request)
 		return
 	}
 
-	if request.Method == "POST" {
-		e.servePOST(writer, request)
+	if e.isServeDeleter(request) {
+		e.serveDeleter(writer, request)
 		return
 	}
 
-	if !e.store.HasReadAccessForRequest(request) {
-		log.Printf("%s %s: no read permissions", request.Method, request.URL)
-		failer.ServeUnauthorized(writer, request)
-		return
-	}
-
-	if request.Method == "GET" {
-		e.serveGET(writer, request)
+	if e.isServeCreateUI(request) || e.isServeEditUI(request) {
+		e.serveEditUI(writer, request)
 		return
 	}
 
@@ -62,7 +71,13 @@ func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	failer.ServeMethodNotAllowed(writer, request)
 }
 
-func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
+func (e *Editor) serveWriter(writer http.ResponseWriter, request *http.Request) {
+	if !e.store.HasWriteAccessForRequest(request) {
+		log.Printf("%s %s: no write permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
 	var content = request.FormValue("content")
 	if content == "" {
 		log.Printf("%s %s: no valid content in request", request.Method, request.URL)
@@ -86,7 +101,36 @@ func (e *Editor) servePOST(writer http.ResponseWriter, request *http.Request) {
 	router.RedirectToEditMode(writer, request)
 }
 
-func (e *Editor) serveGET(writer http.ResponseWriter, request *http.Request) {
+func (e *Editor) serveDeleter(writer http.ResponseWriter, request *http.Request) {
+	if !e.store.HasDeleteAccessForRequest(request) {
+		log.Printf("%s %s: no delete permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
+	e.store.Delete(request)
+	if err := e.store.Err(); err != nil {
+		log.Printf("%s %s: %s", request.Method, request.URL, err)
+		failer.ServeInternalServerError(writer, request)
+		return
+	}
+	log.Printf("%s %s: deleted", request.Method, request.URL)
+
+	fmt.Fprintf(writer, "Successfully deleted")
+}
+
+func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) {
+	if !e.store.HasWriteAccessForRequest(request) {
+		log.Printf("%s %s: no write permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+	if !e.store.HasReadAccessForRequest(request) {
+		log.Printf("%s %s: no read permissions", request.Method, request.URL)
+		failer.ServeUnauthorized(writer, request)
+		return
+	}
+
 	if err := e.assertEditableTextFile(request); err != nil {
 		log.Printf("%s %s: no editable text file: %s", request.Method, request.URL, err)
 		failer.ServeUnsupportedMediaType(writer, request)

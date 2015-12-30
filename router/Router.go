@@ -26,7 +26,7 @@ func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		failer.ServeBadRequest(writer, request)
 	} else if IsModeLogin(request) {
 		r.authenticator.ServeHTTP(writer, request)
-	} else if IsModeEdit(request) || IsModeCreate(request) {
+	} else if IsModeEdit(request) || IsModeCreate(request) || IsModeDelete(request) {
 		r.editor.ServeHTTP(writer, request)
 	} else {
 		r.viewer.ServeHTTP(writer, request)

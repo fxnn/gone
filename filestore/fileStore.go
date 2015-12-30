@@ -3,6 +3,7 @@ package filestore
 import (
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
@@ -97,4 +98,22 @@ func (f *fileStore) OpenWriter(request *http.Request) io.WriteCloser {
 	}
 	f.assertHasWriteAccessForRequest(request)
 	return f.openWriterAtPath(f.pathFromRequest(request))
+}
+
+// Delete will delete the file or directory pointed to by the request.
+// A caller must always check the Err() method.
+func (f *fileStore) Delete(request *http.Request) {
+	if f.hasErr() {
+		return
+	}
+	f.assertHasDeleteAccessForRequest(request)
+
+	var p = f.pathFromRequest(request)
+	if p.HasErr() {
+		f.setErr(p.Err())
+		return
+	}
+
+	var err = os.Remove(p.Path())
+	f.setErr(err)
 }
