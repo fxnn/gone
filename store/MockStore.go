@@ -13,10 +13,12 @@ type MockStore struct {
 	readAccess   bool
 	writeAccess  bool
 	deleteAccess bool
+	mimeType     string
+	exists       bool
 }
 
 func NewMockStore() *MockStore {
-	return &MockStore{}
+	return &MockStore{exists: true}
 }
 
 func (s *MockStore) GivenNoErr() {
@@ -29,6 +31,10 @@ func (s *MockStore) GivenSomeErr() {
 
 func (s *MockStore) GivenErr(err error) {
 	s.err = err
+}
+
+func (s *MockStore) GivenNotExists() {
+	s.exists = false
 }
 
 func (s *MockStore) GivenReadAccess() {
@@ -56,6 +62,9 @@ func (s *MockStore) HasDeleteAccessForRequest(request *http.Request) bool {
 }
 
 func (s *MockStore) OpenReader(request *http.Request) io.ReadCloser {
+	if !s.exists {
+		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+	}
 	return nil
 }
 
@@ -64,6 +73,9 @@ func (s *MockStore) OpenWriter(request *http.Request) io.WriteCloser {
 }
 
 func (s *MockStore) ReadString(request *http.Request) string {
+	if !s.exists {
+		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+	}
 	return ""
 }
 
@@ -71,16 +83,31 @@ func (s *MockStore) WriteString(request *http.Request, content string) {
 }
 
 func (s *MockStore) Delete(request *http.Request) {
+	if !s.exists {
+		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+	}
 }
 
 func (s *MockStore) FileSizeForRequest(request *http.Request) int64 {
+	if !s.exists {
+		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+	}
 	return 0
 }
 
+func (s *MockStore) GivenMimeType(mimeType string) {
+	s.mimeType = mimeType
+}
+
 func (s *MockStore) MimeTypeForRequest(request *http.Request) string {
-	return ""
+	if !s.exists {
+		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+	}
+	return s.mimeType
 }
 
 func (s *MockStore) Err() error {
-	return s.err
+	var result = s.err
+	s.err = nil
+	return result
 }

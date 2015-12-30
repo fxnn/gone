@@ -19,10 +19,10 @@ func TestWriteSuccess(t *testing.T) {
 
 	request.PostForm.Set("content", "content")
 	store.GivenWriteAccess()
-	sut.serveWriter(response, request)
+	sut.ServeHTTP(response, request)
 
 	assertResponseBody(t, response, "")
-	assertResponseCode(t, response, 302)
+	assertResponseCode(t, response, http.StatusFound)
 	assertResponseHeader(t, response, "Location", "/someFile?edit")
 
 }
@@ -34,10 +34,123 @@ func TestWriteUnauthorized(t *testing.T) {
 	var store = store.NewMockStore()
 	var sut = New(store)
 
-	sut.serveWriter(response, request)
+	sut.ServeHTTP(response, request)
 
 	assertResponseBodyNotEmpty(t, response)
-	assertResponseCode(t, response, 401)
+	assertResponseCode(t, response, http.StatusUnauthorized)
+
+}
+
+func TestCreateUISuccess(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?create")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenWriteAccess()
+	store.GivenNotExists()
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusOK)
+
+}
+
+func TestCreateUIMissingWritePermission(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?create")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenNotExists()
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusUnauthorized)
+
+}
+
+func TestCreateUIAlreadyExists(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?create")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenWriteAccess()
+	store.GivenMimeType("text/plain")
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusConflict)
+
+}
+
+func TestEditUISuccess(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?edit")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenReadAccess()
+	store.GivenWriteAccess()
+	store.GivenMimeType("text/plain")
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusOK)
+
+}
+
+func TestEditUIMissingReadPermission(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?edit")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenWriteAccess()
+	store.GivenMimeType("text/plain")
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusUnauthorized)
+
+}
+
+func TestEditUIMissingWritePermission(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?edit")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenReadAccess()
+	store.GivenMimeType("text/plain")
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusUnauthorized)
+
+}
+
+func TestEditUINotExists(t *testing.T) {
+
+	var response = httptest.NewRecorder()
+	var request = getRequest(t, "/someFile?edit")
+	var store = store.NewMockStore()
+	var sut = New(store)
+
+	store.GivenNotExists()
+	store.GivenReadAccess()
+	store.GivenWriteAccess()
+	sut.ServeHTTP(response, request)
+
+	assertResponseBodyNotEmpty(t, response)
+	assertResponseCode(t, response, http.StatusNotFound)
 
 }
 
@@ -69,6 +182,21 @@ func postRequest(t *testing.T, requestUrl string, content string) *http.Request 
 	if err != nil {
 		t.Fatalf("couldn't create http.Request: %v", err)
 	}
+
+	// HINT: PostForm initialisieren, um POST-Parameter mocken zu können
 	request.PostForm = url.Values{}
+
+	return request
+}
+
+func getRequest(t *testing.T, requestUrl string) *http.Request {
+	var request, err = http.NewRequest("GET", requestUrl, strings.NewReader(""))
+	if err != nil {
+		t.Fatalf("couldn't create http.Request: %v", err)
+	}
+
+	// HINT: GET-Parameter auswerten
+	request.ParseForm()
+
 	return request
 }

@@ -125,7 +125,7 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		failer.ServeUnauthorized(writer, request)
 		return
 	}
-	if !e.store.HasReadAccessForRequest(request) {
+	if !router.IsModeCreate(request) && !e.store.HasReadAccessForRequest(request) {
 		log.Printf("%s %s: no read permissions", request.Method, request.URL)
 		failer.ServeUnauthorized(writer, request)
 		return
