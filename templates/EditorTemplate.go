@@ -18,7 +18,7 @@ func LoadEditorTemplate() EditorTemplate {
 	}
 }
 
-func (t *EditorTemplate) Render(writer io.Writer, url *url.URL, content string) {
+func (t *EditorTemplate) Render(writer io.Writer, url *url.URL, content string, edit bool) {
 	if t.err != nil {
 		return
 	}
@@ -26,6 +26,9 @@ func (t *EditorTemplate) Render(writer io.Writer, url *url.URL, content string) 
 	var data = make(map[string]string)
 	data["path"] = url.Path
 	data["content"] = content
+	if edit {
+		data["edit"] = "edit"
+	}
 
 	t.Execute(writer, data)
 }

@@ -154,7 +154,7 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	e.template.Render(writer, request.URL, content)
+	e.template.Render(writer, request.URL, content, router.IsModeEdit(request))
 	if err := e.template.Err(); err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)

@@ -47,6 +47,9 @@
 			<textarea name="content" rows="20">{{.content}}</textarea>
 			<input type="submit" name="save" value="Save" />
 			<input type="submit" name="saveAndReturn" value="Save and Return" />
+			{{if .edit}}
+				<a href="{{.path}}?delete">Delete</a>
+			{{end}}
 		</form>
 	</div>
 </body>
