@@ -76,7 +76,7 @@ func TestReadExistingFileInsideDirectoryDeniesOnMissingExecutePermission(t *test
 
 	sut := sutNotAuthenticated(t)
 
-	readCloser := sut.OpenReader(requestGET("/" + tmpdir + "/" + tmpfile))
+	readCloser := sut.OpenReader(requestGET("/" + tmpfile))
 	closed(readCloser)
 	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
 		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpfile, err)

@@ -40,7 +40,7 @@ func (a *accessControl) assertHasReadAccessForRequest(request *http.Request) {
 		return
 	}
 	if !a.HasReadAccessForRequest(request) {
-		var msg = fmt.Sprintf("Read access denied on %s", request.URL)
+		var msg = fmt.Sprintf("read access denied on %s", request.URL)
 		if a.hasErr() {
 			msg = fmt.Sprintf("%s: %s", msg, a.err)
 		}

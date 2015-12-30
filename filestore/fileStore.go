@@ -83,6 +83,7 @@ func (f *fileStore) OpenReader(request *http.Request) io.ReadCloser {
 	if f.hasErr() {
 		return nil
 	}
+	f.assertPathExists(f.pathFromRequest(request))
 	f.assertHasReadAccessForRequest(request)
 	return f.openReaderAtPath(f.pathFromRequest(request))
 }

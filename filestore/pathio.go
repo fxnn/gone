@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 // pathIO implements basic operations on paths
@@ -44,6 +44,10 @@ func (i *pathIO) openWriterAtPath(p gopath.GoPath) (writer io.WriteCloser) {
 	writer, err := os.Create(p.Path())
 	i.setErr(err)
 	return
+}
+
+func (i *pathIO) assertPathExists(p gopath.GoPath) {
+	i.syncedErrs(p.AssertExists())
 }
 
 // assertPathValidForAnyAccess sets the error flag when the path may not be
@@ -85,6 +89,10 @@ func (i *pathIO) assertPathInsideContentRoot(p gopath.GoPath) {
 // pathFromRequest maps the request to the filesystem.
 // It returns a GoPath that might be errorneous.
 func (i *pathIO) pathFromRequest(request *http.Request) gopath.GoPath {
+	if i.hasErr() {
+		return gopath.FromErr(i.err)
+	}
+
 	var p = i.contentRoot.JoinPath(request.URL.Path).Do(i.normalizePath).Do(i.guessExtension)
 
 	if !p.HasErr() && p.IsDirectory() {
