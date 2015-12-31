@@ -75,11 +75,25 @@ the above requirements.
 This mechanism is transparent to the user, no redirect will happen.
 
 
+## Templates
+
+Gone uses some Go templates for its UI.
+The templates are shipped inside the executable, but you can use custom versions of them.
+For general information on Go HTML templates, see the [html/template godoc](https://golang.org/pkg/html/template/).
+
+With your web root as working directory, invoke `gone export-templates`.
+It creates a new folder `.templates` which will never be delivered via HTTP.
+You'll find all templates inside and can modify them.
+If you (re)start Gone now, it will use the templates from that directory.
+
+Note, that you can also supply a custom template path.
+See `gone -help` for more information.
+
+
 ## Future
 
 Some day, Gone might be able to
 * use external programs to render files into HTML, which would allow you to display manpages or syntax-highlighted code right in the web browser.
-* use customized templates, so that you can change the appereance of the wiki just be editing some Go HTML template files.
 * support OpenID authentication.
 * respect each files / directories group attribute for access control, in combination with a `htgroup` file.
 * incorporate Git as version control system.
