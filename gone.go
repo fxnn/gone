@@ -6,6 +6,8 @@
 // Invoke with -help flag to see configuration options.
 package main
 
+//go:generate esc -prefix resources/static -pkg resources -o resources/static.go resources/static
+
 import (
 	"log"
 	"net/http"
