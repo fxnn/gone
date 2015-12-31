@@ -8,14 +8,16 @@ import (
 
 var out = os.Stderr
 var (
-	help        bool
-	bindAddress string
+	help         bool
+	bindAddress  string
+	templatePath string
 )
 
 func init() {
 	flag.BoolVar(&help, "help", false, "Displays this usage information")
 	flag.BoolVar(&help, "h", false, "")
 	flag.StringVar(&bindAddress, "bind", DefaultBindAddress, "The `address` and/or port to listen on")
+	flag.StringVar(&templatePath, "template", DefaultTemplatePath, "The `path` to a directory containing custom templates")
 	flag.Usage = func() {
 		fmt.Fprintln(out)
 		PrintUsage()
@@ -34,6 +36,10 @@ func (c *commandlineConfig) Command() Command {
 
 func (c *commandlineConfig) BindAddress() string {
 	return bindAddress
+}
+
+func (c *commandlineConfig) TemplatePath() string {
+	return templatePath
 }
 
 func FromCommandline() Config {

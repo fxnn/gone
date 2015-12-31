@@ -40,15 +40,23 @@ func StringToCommand(s string) (Command, error) {
 // A Config instance might be created from different sources, like a
 // configuration file or command line switches.
 type Config interface {
+
 	// Command is the command to be executed by the application.
 	// This defaults to the DefaultCommand constant.
 	Command() Command
+
 	// BindAddress is the network address the application will listen on.
 	// This defaults to the DefaultListenAddress constant.
 	BindAddress() string
+
+	// TemplatePath is the path to the directory containing custom templates.
+	// This defaults to the empty string, meaning the static templates
+	// delivered with the application are used.
+	TemplatePath() string
 }
 
 const (
-	DefaultCommand     = CommandListen
-	DefaultBindAddress = ":8080"
+	DefaultCommand      = CommandListen
+	DefaultBindAddress  = ":8080"
+	DefaultTemplatePath = ""
 )

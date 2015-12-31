@@ -22,6 +22,8 @@ import (
 	"github.com/gorilla/context"
 )
 
+const defaultTemplateDirectoryName = ".templates"
+
 func main() {
 	cfg := config.FromCommandline()
 
@@ -38,7 +40,7 @@ func listen(cfg config.Config) {
 
 	var auth = createAuthenticator(contentRoot)
 	var store = filestore.New(contentRoot, auth)
-	var loader = templates.NewStaticLoader()
+	var loader = createLoader(contentRoot, cfg)
 
 	var viewer = viewer.New(loader, store)
 	var editor = editor.New(loader, store)
@@ -62,6 +64,31 @@ func htpasswdFilePath(contentRoot gopath.GoPath) gopath.GoPath {
 		log.Printf("using authentication data from .htpasswd")
 	}
 	return htpasswdFile
+}
+
+func createLoader(contentRoot gopath.GoPath, cfg config.Config) templates.Loader {
+	var templatePath gopath.GoPath
+
+	// configuration
+	templatePath = gopath.FromPath(cfg.TemplatePath())
+	if !templatePath.IsEmpty() {
+		if !templatePath.IsDirectory() {
+			log.Fatalf("configured template path is no directory: %s", templatePath.Path())
+		}
+		log.Printf("using templates from %s (by configuration)", templatePath.Path())
+		return templates.NewFilesystemLoader(templatePath)
+	}
+
+	// convention
+	templatePath = contentRoot.JoinPath(defaultTemplateDirectoryName)
+	if templatePath.IsDirectory() {
+		log.Printf("using templates from %s (by convention)", templatePath.Path())
+		return templates.NewFilesystemLoader(templatePath)
+	}
+
+	// default
+	log.Printf("using default templates")
+	return templates.NewStaticLoader()
 }
 
 func getwd() gopath.GoPath {
