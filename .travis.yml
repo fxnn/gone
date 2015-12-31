@@ -12,3 +12,13 @@ matrix:
   allow_failures:
     - go: tip
       # HINT: this is only for interest -- decision to support new versions is made manually
+
+install:
+  # set up coveralls.io integration
+  go get golang.org/x/tools/cmd/cover
+  go get github.com/mattn/goveralls
+
+script:
+  # enable coveralls.io integration
+  go test -v -covermode=count -coverprofile=coverage.out
+  $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
