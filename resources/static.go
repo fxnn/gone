@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 )
@@ -98,7 +99,28 @@ func (f *_escFile) Close() error {
 }
 
 func (f *_escFile) Readdir(count int) ([]os.FileInfo, error) {
-	return nil, nil
+	var fileInfos = make([]os.FileInfo, 0)
+	for k, v := range _escData {
+		if isFileInDir(k, f.name) {
+			fileInfos = append(fileInfos, v)
+		}
+	}
+	return fileInfos, nil
+}
+
+func isFileInDir(f string, d string) bool {
+	if f == d {
+		return false
+	}
+
+	// is f in d?
+	if !strings.HasPrefix(f, d) {
+		return false
+	}
+
+	// is f not in a subdir of d?
+	var lastAllowedIndex = strings.LastIndexAny(d, "/")
+	return strings.LastIndexAny(f, "/") == lastAllowedIndex
 }
 
 func (f *_escFile) Stat() (os.FileInfo, error) {

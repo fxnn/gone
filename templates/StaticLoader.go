@@ -3,8 +3,10 @@ package templates
 import (
 	"fmt"
 	"html/template"
+	"os"
 
 	"github.com/fxnn/gone/resources"
+	"github.com/fxnn/gopath"
 )
 
 // StaticLoader loads templates from data packaged with the application binary.
@@ -36,4 +38,34 @@ func (l *StaticLoader) LoadHtmlTemplate(name string) Template {
 		return newWithError(fmt.Errorf("couldn't parse template %s: %s", name, err))
 	}
 	return newFromHtmlTemplate(htmlTemplate)
+}
+
+func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
+	if err := os.MkdirAll(targetDir.Path(), 0777); err != nil {
+		return fmt.Errorf("couldn't create dir %s: %s", targetDir, err)
+	}
+
+	for _, name := range []string{"/editor.html", "/viewer.html"} {
+		var targetFile = targetDir.JoinPath(name)
+		if targetFile.HasErr() {
+			return fmt.Errorf("couldn't create path for template %s: %s", name, targetFile.Err())
+		}
+
+		content, err := resources.FSString(l.useLocalTemplates, name)
+		if err != nil {
+			return fmt.Errorf("couldn't open template %s: %s", name, err)
+		}
+
+		out, err := os.Create(targetFile.Path())
+		if err != nil {
+			return fmt.Errorf("couldn't create file %s: %s", targetFile, err)
+		}
+
+		out.WriteString(content)
+		if out.Close(); err != nil {
+			return fmt.Errorf("couldn't close file %s: %s", targetFile, err)
+		}
+	}
+
+	return nil
 }

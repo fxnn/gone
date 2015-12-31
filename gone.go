@@ -1,8 +1,9 @@
 // Gone is a wiki written in Go. It is designed with server owners and
 // administrators in mind and follows the KISS principles.
 //
-// Currently, gone simply starts a HTTP server at port 8080 and servers files
+// By default, gone simply starts a HTTP server at port 8080 and servers files
 // from the working directory.
+// Invoke with -help flag to see configuration options.
 package main
 
 import (
@@ -28,10 +29,19 @@ func main() {
 	cfg := config.FromCommandline()
 
 	switch cfg.Command() {
+	case config.CommandExportTemplates:
+		exportTemplates(cfg)
 	case config.CommandListen:
 		listen(cfg)
 	case config.CommandHelp:
 		config.PrintUsage()
+	}
+}
+
+func exportTemplates(cfg config.Config) {
+	var target = getwd().JoinPath(defaultTemplateDirectoryName)
+	if err := templates.NewStaticLoader().WriteAllTemplates(target); err != nil {
+		log.Fatalf("error exporting templates: %s", err)
 	}
 }
 
