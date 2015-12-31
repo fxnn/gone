@@ -12,6 +12,7 @@ It uses the filesystem's access control as far as possible.
 
 [![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
 [![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
+[![Coverage Status](https://coveralls.io/repos/fxnn/gone/badge.svg?branch=master&service=github)](https://coveralls.io/github/fxnn/gone?branch=master)
 
 
 ## Usage
@@ -101,12 +102,16 @@ Gone imports code from following projects:
 
 * [abbot/go-http-auth](https://github.com/abbot/go-http-auth) for HTTP basic authentication
 * [gorilla](https://github.com/gorilla), a great web toolkit for Go, used for sessions and cookies
-* [mjibson/esc](https://github.com/mjibson/esc) for embedding files into the binary
 * [russross/blackfriday](https://github.com/russross/blackfriday), a well-made markdown processor for Go
 * [shurcooL/sanitized_anchor_name](https://github.com/shurcooL/sanitized_anchor_name) for making strings URL-compatible
 * [golang.org/x/crypto](https://golang.org/x/crypto) for session-related cryptography
 * [golang.org/x/net/context](https://golang.org/x/net/context) for request-scoped values
 * [fxnn/gopath](https://github.com/fxnn/gopath) for easy handling of filesystem paths
+
+Also, the following commands are used to build gone:
+
+* [pierre/gotestcover](https://github.com/pierrre/gotestcover) to run tests with coverage analysis on multiple packages
+* [mjibson/esc](https://github.com/mjibson/esc) for embedding files into the binary
 
 
 ### Architecture
