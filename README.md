@@ -16,7 +16,13 @@ It uses the filesystem's access control as far as possible.
 
 ## Usage
 
-Simply start the application.
+Install the application and start it.
+
+```console
+$ go get github.com/fxnn/gone
+$ gone
+```
+
 The current working directory will now be served on port `8080`.
 For example, the file `test.md` in that working directory is now accessible as `http://localhost:8080/test.md`.
 
@@ -25,6 +31,8 @@ Append `?create` to the URL to create a non-existant file.
 
 While no one will be able to access the outside of the working directory (e.g. by using `/../breakout`),
 it _is_ possible to access symlinks to anywhere in the file system.
+
+See `gone -help` for usage information and configuration options.
 
 
 ## Access Control
