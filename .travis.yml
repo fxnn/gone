@@ -16,9 +16,11 @@ matrix:
 install:
   # set up coveralls.io integration
   - go get golang.org/x/tools/cmd/cover
+  - go get github.com/pierrre/gotestcover
   - go get github.com/mattn/goveralls
 
 script:
-  # enable coveralls.io integration
-  - go test -v -covermode=count -coverprofile=coverage.out ./...
+  # run tests with coverage for all subpackages
+  - gotestcover -coverprofile=coverage.out ./...
+  # submit to coveralls.io
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
