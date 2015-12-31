@@ -203,6 +203,6 @@ func getRequest(t *testing.T, requestUrl string) *http.Request {
 }
 
 func createSut(s store.Store) *Editor {
-	var l = templates.NewStaticLoader(false)
+	var l = templates.NewStaticLoader()
 	return New(l, s)
 }

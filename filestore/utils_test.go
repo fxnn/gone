@@ -10,14 +10,15 @@ import (
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 func sutNotAuthenticated(t *testing.T) store.Store {
-	return New(getwd(t), authenticator.NewNeverAuthenticated())
+	return New(getwdPath(t), authenticator.NewNeverAuthenticated())
 }
 
 func sutAuthenticated(t *testing.T) store.Store {
-	return New(getwd(t), authenticator.NewAlwaysAuthenticated())
+	return New(getwdPath(t), authenticator.NewAlwaysAuthenticated())
 }
 
 func requestGET(path string) (request *http.Request) {
@@ -107,6 +108,10 @@ func removeTempFileFromCurrentwd(t *testing.T, tmpfile string) {
 	if err != nil {
 		t.Fatalf("couldn remove tmpfile %s: %s", tmpfilePath, err)
 	}
+}
+
+func getwdPath(t *testing.T) gopath.GoPath {
+	return gopath.FromPath(getwd(t))
 }
 
 func getwd(t *testing.T) string {
