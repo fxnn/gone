@@ -19,6 +19,7 @@ install:
   - go get github.com/mattn/goveralls
 
 script:
+  - go generate
   # run tests with coverage for all subpackages
   - gotestcover -v -covermode=count -coverprofile=coverage.out ./...
   # submit to coveralls.io
