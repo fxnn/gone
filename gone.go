@@ -12,6 +12,7 @@ import (
 	"path"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/config"
 	"github.com/fxnn/gone/editor"
 	"github.com/fxnn/gone/filestore"
 	"github.com/fxnn/gone/router"
@@ -21,6 +22,17 @@ import (
 )
 
 func main() {
+	cfg := config.FromCommandline()
+
+	switch cfg.Command() {
+	case config.CommandListen:
+		listen()
+	case config.CommandHelp:
+		config.PrintUsage()
+	}
+}
+
+func listen() {
 	var contentRoot = getwd()
 	var htpasswdFilePath = htpasswdFilePath(contentRoot)
 

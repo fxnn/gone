@@ -6,6 +6,10 @@ import (
 	"path/filepath"
 )
 
+// Append appends the given string to this GoPath.
+// It doesn't use any separator, especially no slash.
+//
+// If this GoPath is errorneous, it returns simply this GoPath.
 func (g GoPath) Append(s string) GoPath {
 	if g.HasErr() {
 		return g
@@ -13,10 +17,18 @@ func (g GoPath) Append(s string) GoPath {
 	return g.withPath(g.Path() + s)
 }
 
+// Join appends the other GoPath to this GoPath, separated by the operating
+// systems path separator.
+//
+// If this GoPath is errorneous, it returns simply this GoPath.
 func (g GoPath) Join(other GoPath) GoPath {
 	return g.JoinPath(other.Path())
 }
 
+// Join appends the given path to this GoPath, separated by the operating
+// systmes path separator.
+//
+// If this GoPath is errorneous, it returns simply this GoPath.
 func (g GoPath) JoinPath(p string) GoPath {
 	if g.HasErr() {
 		return g
@@ -24,6 +36,10 @@ func (g GoPath) JoinPath(p string) GoPath {
 	return g.withPath(path.Join(g.Path(), p))
 }
 
+// Dir calls path.Dir() and returns all but the last element of this GoPath,
+// typically the directory containing the file or directory this path points to.
+//
+// If this GoPath is errorneous, it returns simply this GoPath.
 func (g GoPath) Dir() GoPath {
 	if g.HasErr() {
 		return g
