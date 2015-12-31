@@ -14,6 +14,8 @@ matrix:
       # HINT: this is only for interest -- decision to support new versions is made manually
 
 install:
+  # set up code generation
+  - go get github.com/mjibson/esc
   # set up coveralls.io integration
   - go get github.com/pierrre/gotestcover
   - go get github.com/mattn/goveralls

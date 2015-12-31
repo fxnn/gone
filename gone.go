@@ -41,7 +41,11 @@ func main() {
 }
 
 func exportTemplates(cfg config.Config) {
-	var target = getwd().JoinPath(defaultTemplateDirectoryName)
+	var target = templatePath(getwd(), cfg)
+	if target.IsEmpty() {
+		target = getwd().JoinPath(defaultTemplateDirectoryName)
+	}
+
 	if err := templates.NewStaticLoader().WriteAllTemplates(target); err != nil {
 		log.Fatalf("error exporting templates: %s", err)
 	}
@@ -79,28 +83,36 @@ func htpasswdFilePath(contentRoot gopath.GoPath) gopath.GoPath {
 }
 
 func createLoader(contentRoot gopath.GoPath, cfg config.Config) templates.Loader {
-	var templatePath gopath.GoPath
+	var templatePath = templatePath(contentRoot, cfg)
 
-	// configuration
-	templatePath = gopath.FromPath(cfg.TemplatePath())
 	if !templatePath.IsEmpty() {
-		if !templatePath.IsDirectory() {
-			log.Fatalf("configured template path is no directory: %s", templatePath.Path())
-		}
-		log.Printf("using templates from %s (by configuration)", templatePath.Path())
 		return templates.NewFilesystemLoader(templatePath)
 	}
 
+	return templates.NewStaticLoader()
+}
+
+func templatePath(contentRoot gopath.GoPath, cfg config.Config) (result gopath.GoPath) {
+	// configuration
+	result = gopath.FromPath(cfg.TemplatePath())
+	if !result.IsEmpty() {
+		if !result.IsDirectory() {
+			log.Fatalf("configured template path is no directory: %s", result.Path())
+		}
+		log.Printf("using templates from %s (by configuration)", result.Path())
+		return result
+	}
+
 	// convention
-	templatePath = contentRoot.JoinPath(defaultTemplateDirectoryName)
-	if templatePath.IsDirectory() {
-		log.Printf("using templates from %s (by convention)", templatePath.Path())
-		return templates.NewFilesystemLoader(templatePath)
+	result = contentRoot.JoinPath(defaultTemplateDirectoryName)
+	if result.IsDirectory() {
+		log.Printf("using templates from %s (by convention)", result.Path())
+		return result
 	}
 
 	// default
 	log.Printf("using default templates")
-	return templates.NewStaticLoader()
+	return gopath.Empty()
 }
 
 func getwd() gopath.GoPath {
