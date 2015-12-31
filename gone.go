@@ -26,13 +26,13 @@ func main() {
 
 	switch cfg.Command() {
 	case config.CommandListen:
-		listen()
+		listen(cfg)
 	case config.CommandHelp:
 		config.PrintUsage()
 	}
 }
 
-func listen() {
+func listen(cfg config.Config) {
 	var contentRoot = getwd()
 	var htpasswdFilePath = htpasswdFilePath(contentRoot)
 
@@ -45,7 +45,7 @@ func listen() {
 
 	var handlerChain = context.ClearHandler(auth.AuthHandler(router))
 
-	log.Fatal(http.ListenAndServe(":8080", handlerChain))
+	log.Fatal(http.ListenAndServe(cfg.BindAddress(), handlerChain))
 }
 
 func htpasswdFilePath(contentRootPath string) string {

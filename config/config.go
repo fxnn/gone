@@ -10,8 +10,6 @@ const (
 	CommandListen
 )
 
-const DefaultCommand = CommandListen
-
 func (c Command) String() string {
 	switch c {
 	case CommandHelp:
@@ -45,4 +43,12 @@ type Config interface {
 	// Command is the command to be executed by the application.
 	// This defaults to the DefaultCommand constant.
 	Command() Command
+	// BindAddress is the network address the application will listen on.
+	// This defaults to the DefaultListenAddress constant.
+	BindAddress() string
 }
+
+const (
+	DefaultCommand     = CommandListen
+	DefaultBindAddress = ":8080"
+)

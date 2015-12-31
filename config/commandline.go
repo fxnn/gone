@@ -7,11 +7,15 @@ import (
 )
 
 var out = os.Stderr
-var help bool = false
+var (
+	help        bool
+	bindAddress string
+)
 
 func init() {
 	flag.BoolVar(&help, "help", false, "Displays this usage information")
 	flag.BoolVar(&help, "h", false, "")
+	flag.StringVar(&bindAddress, "bind", DefaultBindAddress, "The `address` and/or port to listen on")
 	flag.Usage = func() {
 		fmt.Fprintln(out)
 		PrintUsage()
@@ -19,11 +23,17 @@ func init() {
 }
 
 type commandlineConfig struct {
+	// NOTE: We don't store argument values inside the struct atm,
+	// as those things are global per application instance anyways
 	command Command
 }
 
 func (c *commandlineConfig) Command() Command {
 	return c.command
+}
+
+func (c *commandlineConfig) BindAddress() string {
+	return bindAddress
 }
 
 func FromCommandline() Config {
@@ -55,7 +65,7 @@ func (c *commandlineConfig) parseCommandline() {
 }
 
 func PrintUsage() {
-	fmt.Fprintf(out, "Usage: %s [-flag1 -flag2 ...] [command]", os.Args[0])
+	fmt.Fprintf(out, "Usage: %s [-flags ...] [command]", os.Args[0])
 	fmt.Fprintln(out)
 
 	flag.PrintDefaults()
