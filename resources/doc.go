@@ -4,3 +4,5 @@
 //
 // Use the generate-code.sh script to map those files into compilable code.
 package resources
+
+//go:generate esc -pkg resources -prefix static -o static.go static

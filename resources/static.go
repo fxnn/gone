@@ -187,7 +187,7 @@ func FSMustString(useLocal bool, name string) string {
 var _escData = map[string]*_escFile{
 
 	"/editor.html": {
-		local:   "resources/static/editor.html",
+		local:   "static/editor.html",
 		size:    1206,
 		modtime: 1451566090,
 		compressed: `
@@ -207,7 +207,7 @@ kUldtgQAAA==
 	},
 
 	"/viewer.html": {
-		local:   "resources/static/viewer.html",
+		local:   "static/viewer.html",
 		size:    533,
 		modtime: 1449873698,
 		compressed: `
@@ -223,6 +223,6 @@ igmJ+BcAAP//x9XRxhUCAAA=
 
 	"/": {
 		isDir: true,
-		local: "resources/static",
+		local: "static",
 	},
 }
