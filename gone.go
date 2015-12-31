@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/config"
@@ -18,6 +17,7 @@ import (
 	"github.com/fxnn/gone/router"
 	"github.com/fxnn/gone/templates"
 	"github.com/fxnn/gone/viewer"
+	"github.com/fxnn/gopath"
 
 	"github.com/gorilla/context"
 )
@@ -35,9 +35,8 @@ func main() {
 
 func listen(cfg config.Config) {
 	var contentRoot = getwd()
-	var htpasswdFilePath = htpasswdFilePath(contentRoot)
 
-	var auth = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
+	var auth = createAuthenticator(contentRoot)
 	var store = filestore.New(contentRoot, auth)
 	var loader = templates.NewStaticLoader()
 
@@ -50,19 +49,24 @@ func listen(cfg config.Config) {
 	log.Fatal(http.ListenAndServe(cfg.BindAddress(), handlerChain))
 }
 
-func htpasswdFilePath(contentRootPath string) string {
-	htpasswdFilePath := path.Join(contentRootPath, ".htpasswd")
-	if _, err := os.Stat(htpasswdFilePath); err != nil && os.IsNotExist(err) {
-		log.Printf("no .htpasswd found")
-		return ""
-	}
-	log.Printf("using authentication data from .htpasswd")
-	return htpasswdFilePath
+func createAuthenticator(contentRoot gopath.GoPath) *authenticator.HttpBasicAuthenticator {
+	var htpasswdFile = htpasswdFilePath(contentRoot)
+	return authenticator.NewHttpBasicAuthenticator(htpasswdFile)
 }
 
-func getwd() string {
+func htpasswdFilePath(contentRoot gopath.GoPath) gopath.GoPath {
+	htpasswdFile := contentRoot.JoinPath(".htpasswd")
+	if !htpasswdFile.IsExists() {
+		log.Printf("no .htpasswd found")
+	} else {
+		log.Printf("using authentication data from .htpasswd")
+	}
+	return htpasswdFile
+}
+
+func getwd() gopath.GoPath {
 	if wd, err := os.Getwd(); err == nil {
-		return wd
+		return gopath.FromPath(wd)
 	} else {
 		panic(err)
 	}

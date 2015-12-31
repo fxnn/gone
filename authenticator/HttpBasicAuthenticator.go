@@ -4,9 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fxnn/gone/context"
 	"github.com/abbot/go-http-auth"
+	"github.com/fxnn/gone/context"
 	"github.com/fxnn/gone/router"
+	"github.com/fxnn/gopath"
 )
 
 const (
@@ -18,10 +19,10 @@ type HttpBasicAuthenticator struct {
 	authenticationStore   cookieAuthenticationStore
 }
 
-func NewHttpBasicAuthenticator(htpasswdFilePath string) *HttpBasicAuthenticator {
+func NewHttpBasicAuthenticator(htpasswdFile gopath.GoPath) *HttpBasicAuthenticator {
 	var secretProvider = noSecrets
-	if htpasswdFilePath != "" {
-		secretProvider = auth.HtpasswdFileProvider(htpasswdFilePath)
+	if !htpasswdFile.HasErr() && !htpasswdFile.IsEmpty() {
+		secretProvider = auth.HtpasswdFileProvider(htpasswdFile.Path())
 	}
 	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, secretProvider)
 	var authenticationStore = newCookieAuthenticationStore()

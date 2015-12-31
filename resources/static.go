@@ -186,32 +186,6 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
-	"/.editor.html.swp": {
-		local:   "resources/static/.editor.html.swp",
-		size:    12288,
-		modtime: 1451490921,
-		compressed: `
-H4sIAAAJbogA/+yaUYscNRzAU6EP51mV800QciOiHJ3J7h7tdbdzK+dtxZarPe+29cpRITvJ7oSbSYZM
-9nbvltWHqvgNfBLEF9990Vd99CMIgvjsF1AQ/Cc7u561tD5ZCvnBjyT/SSb5J+Hg2OnV7ly/iTeiBgJe
-ROiLP+/fufjyCvq5g1CiJFMaPZbsuCjrG5fDxpWwGdYvrUeMM5FQw1mUqtLwoVYFjxj6cPZCMlL6qCxo
-wslAkVInZCBMOuxFicpJfywlhCUnmpdqqBNektJQIxICLzVKR6nJs8evyePxnGFo+uGVC2i9Ua/Z5qvB
-Kn5p5faTXpXH4/F4PB6Px+P5HzHFOfQRlM9U7WZVnnug9Hg8Ho/H4/F4PB6Px/P0QhlCN54Fl5H7/X/+
-///3LyD0KfgJeBc8AN8DN8DL4CvgMnge/PV5hH4AvwY/Bz8DPwbvg6egADnIwANwC9wEY3AFPA/+fgGh
-38CfwB/B78BvwQ/AG+DbYAusgW+Ar4MY/OU56A9+CWZgBP4BuXwDfgWOwRxMwENwH9xbnuXbWn6SO+/x
-eDwej8fjecqIif0UtW0rPcVOHmi20VJMmDiGEip9pXNbW5pMuGTTqa0uxRSnmvc3g8kkKqhJp9M3Gc+4
-4UG748qY0GqQ6OPIfv86GxkLWQwNNicF3wzKYS8XJsCS5rZFj/mWZHvcDLUM8DHNhhDdhyimkuF5nLT/
-w3v+MXwxxvCxoZrTqmOipOESxmk1KjeDRi1oQzpVdDqNybz/v2dMBWNczme06S1mnDXcjLHdO5xzkyq2
-Geze2u8GmCZGKHlm4wK73bDbOMloCctIYHKuXXQ1DHGPliLBGT1RMHlfqxynxhQtYj8tTo7UMdf9TI3c
-B8iUNOqXmvXaeh2HYRvFs7O0h80pc4dampOM25WRNXzvXhuvEai7c+lD1mEpTnkL1xuFubqI9WkuspMW
-3layVLDCizjYGSaCUbxPZYm7sB0jLeyK/34y68shkitJE+VK5b6bvorsmwvKmJCDFo42eO7mGglmUpi7
-VnvNtXvKGJW7QDF2ES0GqWnhmmsYVdgqtvWM9828sTjhCcaQY6FKYbcbixILmXK7UGaznqdt+4c0EwPZ
-wrONt6+PbFVzPFn0y6keCGmXM1uN3dqHPK5WtEivavfU2O6tC/WUZlyHEHKJhLk6DR/1fMR7R8I8ossa
-rMMdaLx6uN3Z6m4dumON3VlX19WmSZKyhFsFT4wwcAsWFxDuuQugeHZPoIS/BnicZxKuY3XbRqNRNFqP
-lB6QerPZJGPbx77uIR26e7PHddLpdqpqaDRcF3cYNIuYYTA2Xu3c2u7e3b2G3YS7t9/aub6Ng5CQ99e3
-iR2MD97p3tzB9aiGu2fGE3Lt3QD9FQAA//9iod5mADAAAA==
-`,
-	},
-
 	"/editor.html": {
 		local:   "resources/static/editor.html",
 		size:    1206,

@@ -7,6 +7,7 @@ import (
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 // fileStore implements the storage using plain file system.
@@ -19,7 +20,7 @@ type fileStore struct {
 }
 
 // New initializes a zeroe'd instance ready to use.
-func New(contentRoot string, authenticator authenticator.Authenticator) store.Store {
+func New(contentRoot gopath.GoPath, authenticator authenticator.Authenticator) store.Store {
 	var s = newErrStore()
 	var i = newIOUtil(s)
 	var p = newPathIO(contentRoot, s)

@@ -17,8 +17,8 @@ type pathIO struct {
 	*errStore
 }
 
-func newPathIO(contentRoot string, s *errStore) *pathIO {
-	var result = &pathIO{gopath.FromPath(contentRoot), s}
+func newPathIO(contentRoot gopath.GoPath, s *errStore) *pathIO {
+	var result = &pathIO{contentRoot, s}
 	result.contentRoot = result.contentRoot.Do(result.normalizePath)
 	return result
 }
