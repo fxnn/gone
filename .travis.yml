@@ -12,3 +12,14 @@ matrix:
   allow_failures:
     - go: tip
       # HINT: this is only for interest -- decision to support new versions is made manually
+
+install:
+  # set up coveralls.io integration
+  - go get github.com/pierrre/gotestcover
+  - go get github.com/mattn/goveralls
+
+script:
+  # run tests with coverage for all subpackages
+  - gotestcover -v -covermode=count -coverprofile=coverage.out ./...
+  # submit to coveralls.io
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
