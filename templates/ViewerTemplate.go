@@ -13,9 +13,9 @@ type ViewerTemplate struct {
 	Template
 }
 
-func LoadViewerTemplate() ViewerTemplate {
+func LoadViewerTemplate(loader Loader) ViewerTemplate {
 	return ViewerTemplate{
-		loadHtmlTemplate(viewerTemplateName),
+		loader.LoadHtmlTemplate(viewerTemplateName),
 	}
 }
 

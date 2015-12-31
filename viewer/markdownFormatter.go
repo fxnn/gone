@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/fxnn/gone/failer"
-	"github.com/russross/blackfriday"
 	"github.com/fxnn/gone/templates"
+	"github.com/russross/blackfriday"
 )
 
 const markdownFormatterOutputMimeType = "text/html"
@@ -17,9 +17,9 @@ type markdownFormatter struct {
 	template templates.ViewerTemplate
 }
 
-func newMarkdownFormatter() markdownFormatter {
+func newMarkdownFormatter(l templates.Loader) markdownFormatter {
 	// TODO: Preinitialize Markdown Renderer
-	return markdownFormatter{templates.LoadViewerTemplate()}
+	return markdownFormatter{templates.LoadViewerTemplate(l)}
 }
 
 func (f markdownFormatter) serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request) {

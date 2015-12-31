@@ -16,6 +16,7 @@ import (
 	"github.com/fxnn/gone/editor"
 	"github.com/fxnn/gone/filestore"
 	"github.com/fxnn/gone/router"
+	"github.com/fxnn/gone/templates"
 	"github.com/fxnn/gone/viewer"
 
 	"github.com/gorilla/context"
@@ -38,9 +39,10 @@ func listen(cfg config.Config) {
 
 	var auth = authenticator.NewHttpBasicAuthenticator(htpasswdFilePath)
 	var store = filestore.New(contentRoot, auth)
+	var loader = templates.NewStaticLoader()
 
-	var viewer = viewer.New(store)
-	var editor = editor.New(store)
+	var viewer = viewer.New(loader, store)
+	var editor = editor.New(loader, store)
 	var router = router.New(viewer, editor, auth)
 
 	var handlerChain = context.ClearHandler(auth.AuthHandler(router))

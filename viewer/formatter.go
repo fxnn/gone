@@ -6,19 +6,27 @@ import (
 	"net/http"
 
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gone/templates"
 )
 
 type formatter interface {
 	serveFromReader(reader io.Reader, writer http.ResponseWriter, request *http.Request)
 }
 
-var formatterByMimeType = map[string]formatter{
-	store.MarkdownMimeType: newMarkdownFormatter(),
+type formatters struct {
+	formatterByMimeType map[string]formatter
 }
 
-func mimeTypeFormatter(mediaType string) formatter {
+func newFormatters(l templates.Loader) formatters {
+	var formatterByMimeType = map[string]formatter{
+		store.MarkdownMimeType: newMarkdownFormatter(l),
+	}
+	return formatters{formatterByMimeType}
+}
+
+func (s *formatters) mimeTypeFormatter(mediaType string) formatter {
 	if mimeType, _, err := mime.ParseMediaType(mediaType); err == nil {
-		if f, ok := formatterByMimeType[mimeType]; ok {
+		if f, ok := s.formatterByMimeType[mimeType]; ok {
 			return f
 		}
 	}

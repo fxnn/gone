@@ -1,14 +1,12 @@
 package templates
 
 import (
-	"fmt"
-	"github.com/fxnn/gone/resources"
 	"html/template"
 	"io"
 )
 
-const useLocalEditTemplate bool = false
-
+// Template encapsules basic data and functionality for loading, parsing and
+// rendering UI templates.
 type Template struct {
 	template *template.Template
 	err      error
@@ -35,19 +33,6 @@ func (t *Template) Err() error {
 	var result = t.err
 	t.err = nil
 	return result
-}
-
-func loadHtmlTemplate(name string) Template {
-	content, err := resources.FSString(useLocalEditTemplate, name)
-	if err != nil {
-		return newWithError(fmt.Errorf("couldnt load template %s: %s", name, err))
-	}
-
-	htmlTemplate, err := template.New(name).Parse(content)
-	if err != nil {
-		return newWithError(fmt.Errorf("couldnt parse template %s: %s", name, err))
-	}
-	return newFromHtmlTemplate(htmlTemplate)
 }
 
 func (t *Template) Execute(writer io.Writer, data interface{}) {

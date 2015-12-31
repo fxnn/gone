@@ -1,20 +1,23 @@
 package viewer
 
 import (
-	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/store"
 	"log"
 	"net/http"
+
+	"github.com/fxnn/gone/failer"
+	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gone/templates"
 )
 
 // The Viewer serves HTTP requests with content from the filesystem.
 type Viewer struct {
-	store store.Store
+	store      store.Store
+	formatters formatters
 }
 
 // New initializes a Viewer instance ready to use.
-func New(s store.Store) *Viewer {
-	return &Viewer{s}
+func New(l templates.Loader, s store.Store) *Viewer {
+	return &Viewer{s, newFormatters(l)}
 }
 
 func (v *Viewer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -58,5 +61,5 @@ func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 func (v *Viewer) formatterForRequest(request *http.Request) formatter {
 	var mimeType = v.store.MimeTypeForRequest(request)
 	v.store.Err() // don't care for errors
-	return mimeTypeFormatter(mimeType)
+	return v.formatters.mimeTypeFormatter(mimeType)
 }

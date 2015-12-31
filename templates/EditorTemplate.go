@@ -7,14 +7,15 @@ import (
 
 const editorTemplateName string = "/editor.html"
 
+// EditorTemplate is the template for the edit UI.
 // Always check the Err() result!
 type EditorTemplate struct {
 	Template
 }
 
-func LoadEditorTemplate() EditorTemplate {
+func LoadEditorTemplate(loader Loader) EditorTemplate {
 	return EditorTemplate{
-		loadHtmlTemplate(editorTemplateName),
+		loader.LoadHtmlTemplate(editorTemplateName),
 	}
 }
 

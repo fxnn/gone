@@ -26,8 +26,8 @@ type Editor struct {
 
 // New initializes a new instance ready to use.
 // The instance includes a loaded and parsed template.
-func New(s store.Store) *Editor {
-	var template = templates.LoadEditorTemplate()
+func New(l templates.Loader, s store.Store) *Editor {
+	var template = templates.LoadEditorTemplate(l)
 	if err := template.Err(); err != nil {
 		panic(err)
 	}
