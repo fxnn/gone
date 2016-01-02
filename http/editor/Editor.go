@@ -178,9 +178,29 @@ func (e *Editor) assertEditableTextFile(request *http.Request) error {
 	}
 
 	mimeType := e.store.MimeTypeForRequest(request)
-	if e.store.Err() == nil && strings.HasPrefix(mimeType, "text/") {
+	if e.store.Err() == nil && e.isKnownEditableMimeType(mimeType) {
 		return nil
 	}
 
 	return fmt.Errorf("the mime type %s doesn't represent editable text", mimeType)
+}
+
+var knownEditableMimeTypePrefixes = []string{
+	"application/xhtml+xml",
+	"application/xml",
+	"application/x-javascript",
+	"application/x-latex",
+	"application/x-sh",
+	"application/x-tex",
+	"application/x-troff",
+	"text/",
+}
+
+func (e *Editor) isKnownEditableMimeType(mimeType string) bool {
+	for _, prefix := range knownEditableMimeTypePrefixes {
+		if strings.HasPrefix(mimeType, prefix) {
+			return true
+		}
+	}
+	return false
 }
