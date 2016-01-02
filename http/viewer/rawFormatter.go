@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fxnn/gone/failer"
+	"github.com/fxnn/gone/http/failer"
 )
 
 type rawFormatter struct {

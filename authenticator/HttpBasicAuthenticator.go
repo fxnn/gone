@@ -6,7 +6,7 @@ import (
 
 	"github.com/abbot/go-http-auth"
 	"github.com/fxnn/gone/context"
-	"github.com/fxnn/gone/router"
+	"github.com/fxnn/gone/http/router"
 	"github.com/fxnn/gopath"
 )
 

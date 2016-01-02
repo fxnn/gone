@@ -1,9 +1,11 @@
-package store
+package mockstore
 
 import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/fxnn/gone/store"
 )
 
 // MockStore is only for testing and provides configurable answers.
@@ -17,7 +19,7 @@ type MockStore struct {
 	exists       bool
 }
 
-func NewMockStore() *MockStore {
+func New() *MockStore {
 	return &MockStore{exists: true}
 }
 
@@ -63,7 +65,7 @@ func (s *MockStore) HasDeleteAccessForRequest(request *http.Request) bool {
 
 func (s *MockStore) OpenReader(request *http.Request) io.ReadCloser {
 	if !s.exists {
-		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 	return nil
 }
@@ -74,7 +76,7 @@ func (s *MockStore) OpenWriter(request *http.Request) io.WriteCloser {
 
 func (s *MockStore) ReadString(request *http.Request) string {
 	if !s.exists {
-		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 	return ""
 }
@@ -84,13 +86,13 @@ func (s *MockStore) WriteString(request *http.Request, content string) {
 
 func (s *MockStore) Delete(request *http.Request) {
 	if !s.exists {
-		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 }
 
 func (s *MockStore) FileSizeForRequest(request *http.Request) int64 {
 	if !s.exists {
-		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 	return 0
 }
@@ -101,7 +103,7 @@ func (s *MockStore) GivenMimeType(mimeType string) {
 
 func (s *MockStore) MimeTypeForRequest(request *http.Request) string {
 	if !s.exists {
-		s.err = NewPathNotFoundError("mocked PathNotFoundError")
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 	return s.mimeType
 }

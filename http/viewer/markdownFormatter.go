@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/templates"
+	"github.com/fxnn/gone/http/failer"
+	"github.com/fxnn/gone/http/templates"
 	"github.com/russross/blackfriday"
 )
 

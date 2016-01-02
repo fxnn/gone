@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fxnn/gone/failer"
-	"github.com/fxnn/gone/router"
+	"github.com/fxnn/gone/http/failer"
+	"github.com/fxnn/gone/http/router"
+	"github.com/fxnn/gone/http/templates"
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gone/templates"
 )
 
 const (

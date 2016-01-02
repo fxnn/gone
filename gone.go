@@ -13,11 +13,11 @@ import (
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/config"
-	"github.com/fxnn/gone/editor"
-	"github.com/fxnn/gone/filestore"
-	"github.com/fxnn/gone/router"
-	"github.com/fxnn/gone/templates"
-	"github.com/fxnn/gone/viewer"
+	"github.com/fxnn/gone/http/editor"
+	"github.com/fxnn/gone/http/router"
+	"github.com/fxnn/gone/http/templates"
+	"github.com/fxnn/gone/http/viewer"
+	"github.com/fxnn/gone/store/filestore"
 	"github.com/fxnn/gopath"
 
 	"github.com/gorilla/context"

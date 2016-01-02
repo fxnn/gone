@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/fxnn/gone/failer"
+	"github.com/fxnn/gone/http/failer"
 	"log"
 	"net/http"
 )

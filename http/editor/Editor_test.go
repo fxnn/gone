@@ -7,15 +7,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fxnn/gone/http/templates"
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gone/templates"
+	"github.com/fxnn/gone/store/mockstore"
 )
 
 func TestWriteSuccess(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = postRequest(t, "/someFile", "")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	request.PostForm.Set("content", "content")
@@ -32,7 +33,7 @@ func TestWriteUnauthorized(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = postRequest(t, "/someFile", "")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	sut.ServeHTTP(response, request)
@@ -46,7 +47,7 @@ func TestCreateUISuccess(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?create")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenWriteAccess()
@@ -62,7 +63,7 @@ func TestCreateUIMissingWritePermission(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?create")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenNotExists()
@@ -77,7 +78,7 @@ func TestCreateUIAlreadyExists(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?create")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenWriteAccess()
@@ -93,7 +94,7 @@ func TestEditUISuccess(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?edit")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenReadAccess()
@@ -110,7 +111,7 @@ func TestEditUIMissingReadPermission(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?edit")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenWriteAccess()
@@ -126,7 +127,7 @@ func TestEditUIMissingWritePermission(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?edit")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenReadAccess()
@@ -142,7 +143,7 @@ func TestEditUINotExists(t *testing.T) {
 
 	var response = httptest.NewRecorder()
 	var request = getRequest(t, "/someFile?edit")
-	var store = store.NewMockStore()
+	var store = mockstore.New()
 	var sut = createSut(store)
 
 	store.GivenNotExists()

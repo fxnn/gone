@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fxnn/gopath"
 	"github.com/fxnn/gone/store"
+	"github.com/fxnn/gopath"
 )
 
 type errStore struct {

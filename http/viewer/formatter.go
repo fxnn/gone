@@ -5,8 +5,8 @@ import (
 	"mime"
 	"net/http"
 
+	"github.com/fxnn/gone/http/templates"
 	"github.com/fxnn/gone/store"
-	"github.com/fxnn/gone/templates"
 )
 
 type formatter interface {
