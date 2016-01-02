@@ -130,30 +130,44 @@ Also, the following commands are used to build gone:
 
 ### Architecture
 
-                    +------+
-                    | main |
-                    +------+
-                    /   |  \
-          +--------+    |   +--------+
-          v             v            v
-     +--------+    +--------+    +--------+
-     | viewer |    | editor |    | router |
-     +--------+    +--------+    +--------+
+                   +------+
+                   | main |
+                   +------+
+                    |  | |
+          +---------+  | +---------+
+          v            v           v
+      +-------+    +------+    +--------+
+      | store |    | http |    | config |
+      +-------+    +------+    +--------+
+                   /   |  \
+         +--------+    |   +--------+
+         v             v            v
+    +--------+    +--------+    +--------+
+    | viewer |    | editor |    | router |
+    +--------+    +--------+    +--------+
 
-`main` implements the HTTP Server component, using different handlers to serve
-requests.
+`main` just implements the startup logic and integrates all other top-level
+components.
+Depending on what `config` returns, a command is executed, which by default
+starts up the web server.
+From now on, we have to main parts.
+
+On the one hand, there is the `store` that implements the whole storage.
+Currently, the only usable storage engine is the filesystem.
+
+On the other hand, there is the `http` package that serves HTTP requests using
+different handlers.
 The `router` component directs each request to the matching handler.
 Handlers are implemented in the `viewer` and the `editor` package.
 While the `editor` serves the editing UI, the `viewer` is responsible for 
 serving whatever file is requested.
 
-Both use a set of backend packages.
-* The `filestore` encapsulates mapping requests to the filesystem as well as reading
-  and writing the files themselves.
-* The `templates` package caches and renders the templates used for HTML output.
+Other noteable packages are as follows.
+* The `http/failer` package delivers error pages for HTTP requests.
+* The `http/templates` package caches and renders the templates used for HTML
+  output.
 * The `resources` package encapsulates access to static resources, which are
   bundled with each `gone` distribution.
-* The `failer` package delivers error pages for HTTP requests.
 
 See the [Godoc](http://godoc.org/github.com/fxnn/gone) for more information.
 

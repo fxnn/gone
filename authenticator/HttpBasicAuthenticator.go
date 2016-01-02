@@ -29,8 +29,6 @@ func NewHttpBasicAuthenticator(htpasswdFile gopath.GoPath) *HttpBasicAuthenticat
 	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore}
 }
 
-// AuthHandler wraps an http.Handler and reads authentication information from
-// the session associated with the request prior to calling the delegate handler.
 func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if userId, ok := a.authenticationStore.userId(request); ok {
@@ -43,7 +41,6 @@ func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler
 	})
 }
 
-// ServeHTTP serves an authentication UI.
 func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	a.checkAuth(request)
 

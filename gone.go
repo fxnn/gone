@@ -8,19 +8,14 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/config"
-	"github.com/fxnn/gone/http/editor"
-	"github.com/fxnn/gone/http/router"
+	"github.com/fxnn/gone/http"
 	"github.com/fxnn/gone/http/templates"
-	"github.com/fxnn/gone/http/viewer"
 	"github.com/fxnn/gone/store/filestore"
 	"github.com/fxnn/gopath"
-
-	"github.com/gorilla/context"
 )
 
 const defaultTemplateDirectoryName = ".templates"
@@ -39,9 +34,9 @@ func main() {
 }
 
 func exportTemplates(cfg config.Config) {
-	var target = templatePath(getwd(), cfg)
+	var target = templatePath(contentRoot(), cfg)
 	if target.IsEmpty() {
-		target = getwd().JoinPath(defaultTemplateDirectoryName)
+		target = contentRoot().JoinPath(defaultTemplateDirectoryName)
 	}
 
 	if err := templates.NewStaticLoader().WriteAllTemplates(target); err != nil {
@@ -50,19 +45,13 @@ func exportTemplates(cfg config.Config) {
 }
 
 func listen(cfg config.Config) {
-	var contentRoot = getwd()
+	var cr = contentRoot()
 
-	var auth = createAuthenticator(contentRoot)
-	var store = filestore.New(contentRoot, auth)
-	var loader = createLoader(contentRoot, cfg)
+	var auth = createAuthenticator(cr)
+	var store = filestore.New(cr, auth)
+	var loader = createLoader(cr, cfg)
 
-	var viewer = viewer.New(loader, store)
-	var editor = editor.New(loader, store)
-	var router = router.New(viewer, editor, auth)
-
-	var handlerChain = context.ClearHandler(auth.AuthHandler(router))
-
-	log.Fatal(http.ListenAndServe(cfg.BindAddress(), handlerChain))
+	http.ListenAndServe(cfg.BindAddress(), auth, store, loader)
 }
 
 func createAuthenticator(contentRoot gopath.GoPath) *authenticator.HttpBasicAuthenticator {
@@ -113,7 +102,7 @@ func templatePath(contentRoot gopath.GoPath, cfg config.Config) (result gopath.G
 	return gopath.Empty()
 }
 
-func getwd() gopath.GoPath {
+func contentRoot() gopath.GoPath {
 	if wd, err := os.Getwd(); err == nil {
 		return gopath.FromPath(wd)
 	} else {
