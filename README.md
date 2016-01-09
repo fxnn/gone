@@ -39,11 +39,15 @@ See `gone -help` for usage information and configuration options.
 ## Access Control
 
 Gone uses the file system's access control features.
-Of course, the Gone process can't read or write files it doesn't have a permission to.
-For example, if the Gone process is run by user `joe`, it won't be able to read a file only user `ann` has read permission for (as with `rw-------`).
+Of course, the Gone process can't read or write files it doesn't have a
+permission to.
+For example, if the Gone process is run by user `joe`, it won't be able to read
+a file only user `ann` has read permission for (as with `rw-------`).
 
-Likewise, an anonymous user being not logged in can't read or write files through Gone, except those who have _world_ permissions.
-For example, a file `rw-rw-r--` might be read by an anonymous user, but he won't be able to change that file.
+Likewise, an anonymous user being not logged in can't read or write files
+through Gone, except those who have _world_ permissions.
+For example, a file `rw-rw-r--` might be read by an anonymous user, but he
+won't be able to change that file.
 Also, in a directory `rwxrwxr-x`, only a user being logged in may create new files.
 
 Users can login by appending `?login` to the URL.
@@ -51,6 +55,12 @@ The login information is configured in a good old `.htpasswd` file, placed in th
 of the Gone process.
 Authenticated users can read and write all files that are readable
 resp. writeable by the Gone process.
+
+Note that there's a brute force blocker.
+After each failed login attempt, the login request will be answered with an
+increasing delay of up to 10 seconds.
+The request delay is imposed per user, per IP address and globally.
+The global delay, however, grows ten times slower than the other delays.
 
 ### Security considerations
 

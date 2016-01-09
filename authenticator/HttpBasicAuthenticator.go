@@ -1,10 +1,14 @@
 package authenticator
 
 import (
+	"encoding/base64"
 	"log"
 	"net/http"
+	"regexp"
+	"time"
 
 	"github.com/abbot/go-http-auth"
+	"github.com/fxnn/gone/authenticator/bruteblocker"
 	"github.com/fxnn/gone/context"
 	"github.com/fxnn/gone/http/router"
 	"github.com/fxnn/gopath"
@@ -14,9 +18,44 @@ const (
 	authenticationRealmName = "gone wiki"
 )
 
+var (
+	authTokenRegexp *regexp.Regexp
+	authUserRegexp  *regexp.Regexp
+)
+
+func init() {
+	var err error
+	if authTokenRegexp, err = regexp.Compile("^[^ ]* (.*)$"); err != nil {
+		panic(err)
+	}
+	if authUserRegexp, err = regexp.Compile("^([^:]*):"); err != nil {
+		panic(err)
+	}
+}
+
+func authAttemptUser(request *http.Request) string {
+	var tokens = authTokenRegexp.FindStringSubmatch(request.Header.Get("Authorization"))
+	if len(tokens) < 2 {
+		return ""
+	}
+	var token = tokens[1]
+
+	userAndPass, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return ""
+	}
+
+	var users = authUserRegexp.FindSubmatch(userAndPass)
+	if len(users) < 2 {
+		return ""
+	}
+	return string(users[1])
+}
+
 type HttpBasicAuthenticator struct {
 	authenticationHandler *auth.BasicAuth
 	authenticationStore   cookieAuthenticationStore
+	bruteBlocker          *bruteblocker.BruteBlocker
 }
 
 func NewHttpBasicAuthenticator(htpasswdFile gopath.GoPath) *HttpBasicAuthenticator {
@@ -26,7 +65,8 @@ func NewHttpBasicAuthenticator(htpasswdFile gopath.GoPath) *HttpBasicAuthenticat
 	}
 	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, secretProvider)
 	var authenticationStore = newCookieAuthenticationStore()
-	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore}
+	var bruteBlocker = bruteblocker.New(10*time.Second, 2*time.Second)
+	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore, bruteBlocker}
 }
 
 func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler {
@@ -42,13 +82,18 @@ func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler
 }
 
 func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	a.checkAuth(request)
+	var user = authAttemptUser(request)
+	if user != "" {
+		a.checkAuth(request)
 
-	if a.IsAuthenticated(request) {
-		log.Printf("%s %s: authenticated as %s", request.Method, request.URL, a.UserId(request))
-		a.authenticationStore.setUserId(writer, request, a.UserId(request))
-		router.RedirectToViewMode(writer, request)
-		return
+		if a.IsAuthenticated(request) {
+			log.Printf("%s %s: authenticated as %s", request.Method, request.URL, a.UserId(request))
+			a.authenticationStore.setUserId(writer, request, a.UserId(request))
+			router.RedirectToViewMode(writer, request)
+			return
+		}
+
+		time.Sleep(a.bruteBlocker.Delay(user, request.RemoteAddr, false))
 	}
 
 	a.authenticationHandler.RequireAuth(writer, request)
