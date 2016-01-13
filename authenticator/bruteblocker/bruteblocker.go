@@ -27,11 +27,13 @@ type BruteBlocker struct {
 }
 
 // New creates a new BruteBlocker instance.
-// This starts a goroutine, which has to be shut down eventually!
+// This starts a goroutine, which might be shut down at any time using the
+// ShutDown() func.
 //
 // delayMax denotes the maximum delay to impose, and the delayStep values denote
 // the delay increment per failed authentication attempt.
-// Separate delays are tracked per user, per source ip address and globally.
+// Separate delays are tracked per user, per source ip address and globally (i.e.
+// for all users and ip addresses).
 func New(
 	delayMax time.Duration,
 	userDelayStep time.Duration,
