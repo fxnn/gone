@@ -9,13 +9,20 @@ type request struct {
 	response   chan<- time.Duration
 }
 
+// BruteBlocker encapsulates data and behaviour for brute force attack
+// detection.
+// It memorizes how many failed attempts occured per user and ip address, and
+// when the last one occured.
+// To allow for multi threaded access, it also creates a goroutine and stores
+// channels for messaging.
 type BruteBlocker struct {
 	requests            chan request
 	shutdown            chan struct{}
 	countFailedAttempts map[string]int
 	lastFailedAttempt   map[string]time.Time
 	delayMax            time.Duration
-	delayStep           time.Duration
+	userDelayStep       time.Duration
+	addrDelayStep       time.Duration
 	globalDelayStep     time.Duration
 }
 
@@ -31,12 +38,31 @@ func New(delayMax time.Duration, delayStep time.Duration) *BruteBlocker {
 		countFailedAttempts: make(map[string]int),
 		lastFailedAttempt:   make(map[string]time.Time),
 		delayMax:            delayMax,
-		delayStep:           delayStep,
-		// NOTE, that the global delay grows slower
-		globalDelayStep: delayStep / 10,
+		userDelayStep:       delayStep,
+		addrDelayStep:       max(1, delayStep/10),
+		globalDelayStep:     max(1, delayStep/20),
 	}
 	go result.serve()
 	return result
+}
+
+// ShutDown stops the goroutine associated with this BruteBlocker instance.
+// The instance is no longer functional.
+func (b *BruteBlocker) ShutDown() {
+	b.shutdown <- struct{}{}
+}
+
+// Delay informs this BruteBlocker about a login attempt and returns the
+// amount of time the user should be blocked.
+//
+// Note that, when delaying the response while allowing concurrent requests, you
+// should also delay after an successful authentication.
+// This way, the attacker needs to await the full delay in order to know whether
+// his authentication attempt succeeded or not.
+func (b *BruteBlocker) Delay(userId string, sourceAddr string, successful bool) time.Duration {
+	var response = make(chan time.Duration)
+	b.requests <- request{userId, sourceAddr, successful, response}
+	return <-response
 }
 
 func (b *BruteBlocker) serve() {
@@ -51,18 +77,18 @@ func (b *BruteBlocker) serve() {
 }
 
 func (b *BruteBlocker) delay(userId string, sourceAddr string, successful bool) time.Duration {
-	// NOTE, that we also impose a delay on successful authentication attempts,
-	// so that the attacker needs our response.
-
-	var userDelay = b.delayFor(userId, b.delayStep, successful)
-	var addrDelay = b.delayFor(sourceAddr, b.delayStep, successful)
-	var globalDelay = b.delayFor("", b.globalDelayStep, successful)
+	var userDelay = b.delayCriterion("user="+userId, b.userDelayStep, successful)
+	var addrDelay = b.delayCriterion("addr="+sourceAddr, b.addrDelayStep, successful)
+	var globalDelay = b.delayCriterion("global", b.globalDelayStep, successful)
 
 	var maxDelay = max(globalDelay, max(userDelay, addrDelay))
 	return min(maxDelay, b.delayMax)
 }
 
-func (b *BruteBlocker) delayFor(id string, step time.Duration, successful bool) time.Duration {
+func (b *BruteBlocker) delayCriterion(id string, step time.Duration, successful bool) time.Duration {
+	// NOTE, that we also impose a delay on successful authentication attempts,
+	// so that the attacker needs our response.
+
 	var count = b.countFailedAttempts[id]
 	if !successful {
 		b.countFailedAttempts[id] = count + 1
@@ -90,14 +116,4 @@ func min(a time.Duration, b time.Duration) time.Duration {
 		return b
 	}
 	return a
-}
-
-func (b *BruteBlocker) ShutDown() {
-	b.shutdown <- struct{}{}
-}
-
-func (b *BruteBlocker) Delay(userId string, sourceAddr string, successful bool) time.Duration {
-	var response = make(chan time.Duration)
-	b.requests <- request{userId, sourceAddr, successful, response}
-	return <-response
 }
