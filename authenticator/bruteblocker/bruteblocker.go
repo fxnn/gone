@@ -29,18 +29,24 @@ type BruteBlocker struct {
 // New creates a new BruteBlocker instance.
 // This starts a goroutine, which has to be shut down eventually!
 //
-// delayMax denotes the maximum delay to impose, delayStep denotes the delay
-// increment per failed authentication attempt.
-func New(delayMax time.Duration, delayStep time.Duration) *BruteBlocker {
+// delayMax denotes the maximum delay to impose, and the delayStep values denote
+// the delay increment per failed authentication attempt.
+// Separate delays are tracked per user, per source ip address and globally.
+func New(
+	delayMax time.Duration,
+	userDelayStep time.Duration,
+	addrDelayStep time.Duration,
+	globalDelayStep time.Duration,
+) *BruteBlocker {
 	var result = &BruteBlocker{
 		requests:            make(chan request),
 		shutdown:            make(chan struct{}),
 		countFailedAttempts: make(map[string]int),
 		lastFailedAttempt:   make(map[string]time.Time),
 		delayMax:            delayMax,
-		userDelayStep:       delayStep,
-		addrDelayStep:       max(1, delayStep/10),
-		globalDelayStep:     max(1, delayStep/20),
+		userDelayStep:       userDelayStep,
+		addrDelayStep:       addrDelayStep,
+		globalDelayStep:     globalDelayStep,
 	}
 	go result.serve()
 	return result

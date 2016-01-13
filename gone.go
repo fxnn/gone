@@ -47,16 +47,25 @@ func exportTemplates(cfg config.Config) {
 func listen(cfg config.Config) {
 	var cr = contentRoot()
 
-	var auth = createAuthenticator(cr)
+	var auth = createAuthenticator(cr, cfg)
 	var store = filestore.New(cr, auth)
 	var loader = createLoader(cr, cfg)
 
 	http.ListenAndServe(cfg.BindAddress(), auth, store, loader)
 }
 
-func createAuthenticator(contentRoot gopath.GoPath) *authenticator.HttpBasicAuthenticator {
+func createAuthenticator(
+	contentRoot gopath.GoPath,
+	cfg config.Config,
+) *authenticator.HttpBasicAuthenticator {
 	var htpasswdFile = htpasswdFilePath(contentRoot)
-	return authenticator.NewHttpBasicAuthenticator(htpasswdFile)
+	return authenticator.NewHttpBasicAuthenticator(
+		htpasswdFile,
+		cfg.BruteforceMaxDelay(),
+		cfg.BruteforceDelayStep(),
+		cfg.BruteforceDelayStep()/5,
+		cfg.BruteforceDelayStep()/20,
+	)
 }
 
 func htpasswdFilePath(contentRoot gopath.GoPath) gopath.GoPath {

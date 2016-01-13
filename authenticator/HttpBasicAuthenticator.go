@@ -58,14 +58,20 @@ type HttpBasicAuthenticator struct {
 	bruteBlocker          *bruteblocker.BruteBlocker
 }
 
-func NewHttpBasicAuthenticator(htpasswdFile gopath.GoPath) *HttpBasicAuthenticator {
+func NewHttpBasicAuthenticator(
+	htpasswdFile gopath.GoPath,
+	delayMax time.Duration,
+	userDelayStep time.Duration,
+	addrDelayStep time.Duration,
+	globalDelayStep time.Duration,
+) *HttpBasicAuthenticator {
 	var secretProvider = noSecrets
 	if !htpasswdFile.HasErr() && !htpasswdFile.IsEmpty() {
 		secretProvider = auth.HtpasswdFileProvider(htpasswdFile.Path())
 	}
 	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, secretProvider)
 	var authenticationStore = newCookieAuthenticationStore()
-	var bruteBlocker = bruteblocker.New(10*time.Second, 2*time.Second)
+	var bruteBlocker = bruteblocker.New(delayMax, userDelayStep, addrDelayStep, globalDelayStep)
 	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore, bruteBlocker}
 }
 
@@ -86,14 +92,16 @@ func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *
 	if user != "" {
 		a.checkAuth(request)
 
+		// NOTE: Delay request even if authentication was successful, so that the
+		// attacker needs our response
+		time.Sleep(a.bruteBlocker.Delay(user, request.RemoteAddr, a.IsAuthenticated(request)))
+
 		if a.IsAuthenticated(request) {
 			log.Printf("%s %s: authenticated as %s", request.Method, request.URL, a.UserId(request))
 			a.authenticationStore.setUserId(writer, request, a.UserId(request))
 			router.RedirectToViewMode(writer, request)
 			return
 		}
-
-		time.Sleep(a.bruteBlocker.Delay(user, request.RemoteAddr, false))
 	}
 
 	a.authenticationHandler.RequireAuth(writer, request)

@@ -1,45 +1,6 @@
 package config
 
-import "fmt"
-
-// Command represents a command that can be executed by the application.
-type Command int
-
-const (
-	CommandHelp Command = iota
-	CommandListen
-	CommandExportTemplates
-)
-
-// String returns the string representation of the command, as it's to be used
-// on the commandline.
-func (c Command) String() string {
-	switch c {
-	case CommandHelp:
-		return "help"
-	case CommandListen:
-		return "listen"
-	case CommandExportTemplates:
-		return "export-templates"
-	}
-	return ""
-}
-
-// Commands returns all valid command values.
-func Commands() []Command {
-	return []Command{CommandHelp, CommandListen, CommandExportTemplates}
-}
-
-// StringToCommand interprets the given string as a Command.
-// It returns an error if the given string is no known command value.
-func StringToCommand(s string) (Command, error) {
-	for _, cmd := range Commands() {
-		if s == cmd.String() {
-			return cmd, nil
-		}
-	}
-	return DefaultCommand, fmt.Errorf("invalid command: %s", s)
-}
+import "time"
 
 // Config is the configuration for the application.
 // A Config instance might be created from different sources, like a
@@ -58,10 +19,24 @@ type Config interface {
 	// This defaults to the empty string, meaning the static templates
 	// delivered with the application are used.
 	TemplatePath() string
+
+	// BruteforceMaxDelay is the maximum amount of time a login request is
+	// delayed in order to prevent bruteforce attacks.
+	BruteforceMaxDelay() time.Duration
+
+	// BruteforceDelayStep configures how fast login requests will take longer
+	// after failed login attempts.
+	// After a failed attempt, the next attempt will take BruteforceDelayStep()
+	// longer for the same user; BruteforceDelayStep() / 5 longer for the same
+	// IP address and BruteforceDelayStep() / 20 longer independent of user and
+	// IP address.
+	BruteforceDelayStep() time.Duration
 }
 
 const (
-	DefaultCommand      = CommandListen
-	DefaultBindAddress  = ":8080"
-	DefaultTemplatePath = ""
+	DefaultCommand             = CommandListen
+	DefaultBindAddress         = ":8080"
+	DefaultTemplatePath        = ""
+	DefaultBruteforceMaxDelay  = 20 * time.Second
+	DefaultBruteforceDelayStep = 1 * time.Second
 )

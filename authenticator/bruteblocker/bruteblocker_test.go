@@ -7,11 +7,20 @@ import (
 	"time"
 )
 
+var (
+	defaultMax        = 10 * time.Second
+	defaultUserStep   = 1 * time.Second
+	defaultAddrStep   = 100 * time.Millisecond
+	defaultGlobalStep = 50 * time.Millisecond
+)
+
+func newSut() *BruteBlocker {
+	return New(defaultMax, defaultUserStep, defaultAddrStep, defaultGlobalStep)
+}
+
 func TestDelayPanicsAfterShutdown(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	sut.ShutDown()
 
 	defer func() {
@@ -26,9 +35,7 @@ func TestDelayPanicsAfterShutdown(t *testing.T) {
 
 func TestshutdownPanicsAfterShutdown(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	sut.ShutDown()
 
 	defer func() {
@@ -43,9 +50,7 @@ func TestshutdownPanicsAfterShutdown(t *testing.T) {
 
 func TestGrowingDelay(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	var results = make([]time.Duration, 0)
 
 	for i := 0; i < 3; i++ {
@@ -60,16 +65,14 @@ func TestGrowingDelay(t *testing.T) {
 
 func TestDelayLimitedAtMax(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	var results = make([]time.Duration, 0)
 
 	for i := 0; i <= 20; i++ {
 		results = append(results, sut.Delay("user", "ip", false))
 	}
 
-	if results[20] != max {
+	if results[20] != defaultMax {
 		t.Fatalf("Expected 21th delay to be maximum, but was %v", results[20])
 	}
 
@@ -77,16 +80,14 @@ func TestDelayLimitedAtMax(t *testing.T) {
 
 func TestDelayForUserGrowsAsSpecified(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	var results = make([]time.Duration, 0)
 
 	for i := 0; i <= 10; i++ {
 		results = append(results, sut.Delay("user", fmt.Sprintf("ip%d", i), false))
 	}
 
-	if results[10] != max {
+	if results[10] != defaultMax {
 		t.Fatalf("Expected 11th delay to be maximum, but was %v", results[10])
 	}
 
@@ -94,16 +95,14 @@ func TestDelayForUserGrowsAsSpecified(t *testing.T) {
 
 func TestDelayForAddrGrowsSlower(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	var results = make([]time.Duration, 0)
 
 	for i := 0; i <= 10; i++ {
 		results = append(results, sut.Delay(fmt.Sprintf("user%d", i), "ip", false))
 	}
 
-	if results[10] >= max {
+	if results[10] >= defaultMax {
 		t.Fatalf("Expected 11th delay to be less than maximum, but was %v", results[10])
 	}
 	if results[10] != 1*time.Second {
@@ -114,16 +113,14 @@ func TestDelayForAddrGrowsSlower(t *testing.T) {
 
 func TestDelayForGlobalGrowsSlower(t *testing.T) {
 
-	var max = 10 * time.Second
-	var step = 1 * time.Second
-	var sut = New(max, step)
+	var sut = newSut()
 	var results = make([]time.Duration, 0)
 
 	for i := 0; i <= 10; i++ {
 		results = append(results, sut.Delay(fmt.Sprintf("user%d", i), fmt.Sprintf("ip%d", i), false))
 	}
 
-	if results[10] >= max {
+	if results[10] >= defaultMax {
 		t.Fatalf("Expected 11th delay to be less than maximum, but was %v", results[10])
 	}
 	if results[10] != 500*time.Millisecond {

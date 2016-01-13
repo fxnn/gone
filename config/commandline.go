@@ -4,13 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 )
 
 var out = os.Stderr
 var (
-	help         bool
-	bindAddress  string
-	templatePath string
+	help                      bool
+	bindAddress               string
+	templatePath              string
+	bruteforceMaxDelayMillis  int
+	bruteforceDelayStepMillis int
 )
 
 func init() {
@@ -18,6 +21,8 @@ func init() {
 	flag.BoolVar(&help, "h", false, "")
 	flag.StringVar(&bindAddress, "bind", DefaultBindAddress, "The `address` and/or port to listen on")
 	flag.StringVar(&templatePath, "template", DefaultTemplatePath, "The `path` to a directory containing custom templates")
+	flag.IntVar(&bruteforceMaxDelayMillis, "bruteforce-max-delay", int(DefaultBruteforceMaxDelay/time.Millisecond), "The max number of `millis` to delay login requests.")
+	flag.IntVar(&bruteforceDelayStepMillis, "bruteforce-delay-step", int(DefaultBruteforceDelayStep/time.Millisecond), "The number of `millis` to delay login requests per recently failed login attempt.")
 	flag.Usage = func() {
 		fmt.Fprintln(out)
 		PrintUsage()
@@ -40,6 +45,14 @@ func (c *commandlineConfig) BindAddress() string {
 
 func (c *commandlineConfig) TemplatePath() string {
 	return templatePath
+}
+
+func (c *commandlineConfig) BruteforceMaxDelay() time.Duration {
+	return time.Duration(bruteforceMaxDelayMillis) * time.Millisecond
+}
+
+func (c *commandlineConfig) BruteforceDelayStep() time.Duration {
+	return time.Duration(bruteforceDelayStepMillis) * time.Millisecond
 }
 
 func FromCommandline() Config {
