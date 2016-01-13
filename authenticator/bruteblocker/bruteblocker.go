@@ -47,7 +47,7 @@ func New(delayMax time.Duration, delayStep time.Duration) *BruteBlocker {
 }
 
 // ShutDown stops the goroutine associated with this BruteBlocker instance.
-// The instance is no longer functional.
+// The instance is no longer functional and will panic on use.
 func (b *BruteBlocker) ShutDown() {
 	b.shutdown <- struct{}{}
 }
@@ -71,7 +71,9 @@ func (b *BruteBlocker) serve() {
 		case rq := <-b.requests:
 			rq.response <- b.delay(rq.userId, rq.sourceAddr, rq.successful)
 		case _ = <-b.shutdown:
-			break
+			close(b.requests)
+			close(b.shutdown)
+			return
 		}
 	}
 }

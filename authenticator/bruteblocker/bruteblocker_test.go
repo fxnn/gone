@@ -7,6 +7,40 @@ import (
 	"time"
 )
 
+func TestDelayPanicsAfterShutdown(t *testing.T) {
+
+	var max = 10 * time.Second
+	var step = 1 * time.Second
+	var sut = New(max, step)
+	sut.ShutDown()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatalf("Panic expected; but actually the test ended regularly")
+		}
+	}()
+
+	sut.Delay("", "", false)
+
+}
+
+func TestshutdownPanicsAfterShutdown(t *testing.T) {
+
+	var max = 10 * time.Second
+	var step = 1 * time.Second
+	var sut = New(max, step)
+	sut.ShutDown()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatalf("Panic expected; but actually the test ended regularly")
+		}
+	}()
+
+	sut.ShutDown()
+
+}
+
 func TestGrowingDelay(t *testing.T) {
 
 	var max = 10 * time.Second
