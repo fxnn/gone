@@ -65,6 +65,7 @@ func createAuthenticator(
 		cfg.BruteforceDelayStep(),
 		cfg.BruteforceDelayStep()/5,
 		cfg.BruteforceDelayStep()/20,
+		cfg.BruteforceDropDelayAfter(),
 	)
 }
 

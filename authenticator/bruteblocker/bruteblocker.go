@@ -2,13 +2,6 @@ package bruteblocker
 
 import "time"
 
-type request struct {
-	userId     string
-	sourceAddr string
-	successful bool
-	response   chan<- time.Duration
-}
-
 // BruteBlocker encapsulates data and behaviour for brute force attack
 // detection.
 // It memorizes how many failed attempts occured per user and ip address, and
@@ -16,15 +9,24 @@ type request struct {
 // To allow for multi threaded access, it also creates a goroutine and stores
 // channels for messaging.
 type BruteBlocker struct {
-	requests            chan request
-	shutdown            chan struct{}
+	// channels
+	requests      chan request
+	cleanUpTicker *time.Ticker
+
+	// state
+	shutdown            bool
 	countFailedAttempts map[string]int
 	lastFailedAttempt   map[string]time.Time
-	delayMax            time.Duration
-	userDelayStep       time.Duration
-	addrDelayStep       time.Duration
-	globalDelayStep     time.Duration
+
+	// configuration
+	delayMax        time.Duration
+	userDelayStep   time.Duration
+	addrDelayStep   time.Duration
+	globalDelayStep time.Duration
+	dropAfter       time.Duration
 }
+
+type request func()
 
 // New creates a new BruteBlocker instance.
 // This starts a goroutine, which might be shut down at any time using the
@@ -34,30 +36,60 @@ type BruteBlocker struct {
 // the delay increment per failed authentication attempt.
 // Separate delays are tracked per user, per source ip address and globally (i.e.
 // for all users and ip addresses).
+// dropAfter denotes how long after the last failed login attempt the delay
+// should be dropped.
 func New(
 	delayMax time.Duration,
 	userDelayStep time.Duration,
 	addrDelayStep time.Duration,
 	globalDelayStep time.Duration,
+	dropAfter time.Duration,
 ) *BruteBlocker {
+	var cleanUpInterval = max(1*time.Second, min(60*time.Second, dropAfter))
 	var result = &BruteBlocker{
 		requests:            make(chan request),
-		shutdown:            make(chan struct{}),
+		cleanUpTicker:       time.NewTicker(cleanUpInterval),
+		shutdown:            false,
 		countFailedAttempts: make(map[string]int),
 		lastFailedAttempt:   make(map[string]time.Time),
 		delayMax:            delayMax,
 		userDelayStep:       userDelayStep,
 		addrDelayStep:       addrDelayStep,
 		globalDelayStep:     globalDelayStep,
+		dropAfter:           dropAfter,
 	}
 	go result.serve()
+	go result.cleanUpEachTick()
 	return result
 }
 
 // ShutDown stops the goroutine associated with this BruteBlocker instance.
 // The instance is no longer functional and will panic on use.
 func (b *BruteBlocker) ShutDown() {
-	b.shutdown <- struct{}{}
+	b.requests <- func() {
+		b.shutdown = true
+	}
+}
+
+// CleanUp removes old entries from memory.
+// An entry is old if the last failed login attempt is older than the dropAfter
+// parameter requires.
+func (b *BruteBlocker) CleanUp() {
+	var response = make(chan struct{})
+	for id, timestamp := range b.lastFailedAttempt {
+		if time.Since(timestamp) > b.dropAfter {
+			// NOTE that delete must happen as request, just like all accesses
+			// to the maps.
+			// HINT: We synchronize calls using response to not surprise the
+			// with not being done with cleanup after CleanUp() returns
+			b.requests <- func() {
+				delete(b.lastFailedAttempt, id)
+				delete(b.countFailedAttempts, id)
+				response <- struct{}{}
+			}
+			<-response
+		}
+	}
 }
 
 // Delay informs this BruteBlocker about a login attempt and returns the
@@ -69,23 +101,40 @@ func (b *BruteBlocker) ShutDown() {
 // his authentication attempt succeeded or not.
 func (b *BruteBlocker) Delay(userId string, sourceAddr string, successful bool) time.Duration {
 	var response = make(chan time.Duration)
-	b.requests <- request{userId, sourceAddr, successful, response}
+	// NOTE that delay call must happen as request, just as all accesses to
+	// internal data structures
+	b.requests <- func() {
+		response <- b.delay(userId, sourceAddr, successful)
+	}
 	return <-response
 }
 
+// serve accepts and runs requests from the BruteBlocker struct. This way, all
+// accesses to the not thread-safe maps can happen in one single gorotuine
+// (communication by sharing).
 func (b *BruteBlocker) serve() {
 	for {
 		select {
 		case rq := <-b.requests:
-			rq.response <- b.delay(rq.userId, rq.sourceAddr, rq.successful)
-		case _ = <-b.shutdown:
-			close(b.requests)
-			close(b.shutdown)
-			return
+			rq()
+			if b.shutdown {
+				close(b.requests)
+				b.cleanUpTicker.Stop()
+				return
+			}
 		}
 	}
 }
 
+func (b *BruteBlocker) cleanUpEachTick() {
+	for range b.cleanUpTicker.C {
+		b.CleanUp()
+	}
+}
+
+// delay calculates the delay for the given login attempt and updates internal
+// data structures.
+// It MUST be called as request.
 func (b *BruteBlocker) delay(userId string, sourceAddr string, successful bool) time.Duration {
 	var userDelay = b.delayCriterion("user="+userId, b.userDelayStep, successful)
 	var addrDelay = b.delayCriterion("addr="+sourceAddr, b.addrDelayStep, successful)

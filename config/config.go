@@ -31,12 +31,17 @@ type Config interface {
 	// IP address and BruteforceDelayStep() / 20 longer independent of user and
 	// IP address.
 	BruteforceDelayStep() time.Duration
+
+	// BruteforceDropDelayAfter configures after what time after the last failed
+	// login attempt to drop the delays.
+	BruteforceDropDelayAfter() time.Duration
 }
 
 const (
-	DefaultCommand             = CommandListen
-	DefaultBindAddress         = ":8080"
-	DefaultTemplatePath        = ""
-	DefaultBruteforceMaxDelay  = 20 * time.Second
-	DefaultBruteforceDelayStep = 1 * time.Second
+	DefaultCommand                  = CommandListen
+	DefaultBindAddress              = ":8080"
+	DefaultTemplatePath             = ""
+	DefaultBruteforceMaxDelay       = 20 * time.Second
+	DefaultBruteforceDelayStep      = 1 * time.Second
+	DefaultBruteforceDropDelayAfter = 4 * time.Hour
 )

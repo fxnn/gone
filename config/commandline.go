@@ -9,20 +9,34 @@ import (
 
 var out = os.Stderr
 var (
-	help                      bool
-	bindAddress               string
-	templatePath              string
-	bruteforceMaxDelayMillis  int
-	bruteforceDelayStepMillis int
+	help                            bool
+	bindAddress                     string
+	templatePath                    string
+	bruteforceMaxDelayMillis        int
+	bruteforceDelayStepMillis       int
+	bruteforceDropDelayAfterMinutes int
 )
 
 func init() {
-	flag.BoolVar(&help, "help", false, "Displays this usage information")
+	flag.BoolVar(&help, "help", false,
+		"Displays this usage information")
 	flag.BoolVar(&help, "h", false, "")
-	flag.StringVar(&bindAddress, "bind", DefaultBindAddress, "The `address` and/or port to listen on")
-	flag.StringVar(&templatePath, "template", DefaultTemplatePath, "The `path` to a directory containing custom templates")
-	flag.IntVar(&bruteforceMaxDelayMillis, "bruteforce-max-delay", int(DefaultBruteforceMaxDelay/time.Millisecond), "The max number of `millis` to delay login requests.")
-	flag.IntVar(&bruteforceDelayStepMillis, "bruteforce-delay-step", int(DefaultBruteforceDelayStep/time.Millisecond), "The number of `millis` to delay login requests per recently failed login attempt.")
+
+	flag.StringVar(&bindAddress, "bind", DefaultBindAddress,
+		"The `address` and/or port to listen on")
+	flag.StringVar(&templatePath, "template", DefaultTemplatePath,
+		"The `path` to a directory containing custom templates")
+
+	flag.IntVar(&bruteforceMaxDelayMillis, "bruteforce-max-delay",
+		int(DefaultBruteforceMaxDelay/time.Millisecond),
+		"The max number of `millis` to delay login requests.")
+	flag.IntVar(&bruteforceDelayStepMillis, "bruteforce-delay-step",
+		int(DefaultBruteforceDelayStep/time.Millisecond),
+		"The number of `millis` to delay login requests per recently failed login attempt.")
+	flag.IntVar(&bruteforceDropDelayAfterMinutes, "bruteforce-drop-delay-after",
+		int(DefaultBruteforceDropDelayAfter/time.Minute),
+		"The lifetime of each delay in `minutes` after the last failed login attempt.")
+
 	flag.Usage = func() {
 		fmt.Fprintln(out)
 		PrintUsage()
@@ -53,6 +67,10 @@ func (c *commandlineConfig) BruteforceMaxDelay() time.Duration {
 
 func (c *commandlineConfig) BruteforceDelayStep() time.Duration {
 	return time.Duration(bruteforceDelayStepMillis) * time.Millisecond
+}
+
+func (c *commandlineConfig) BruteforceDropDelayAfter() time.Duration {
+	return time.Duration(bruteforceDropDelayAfterMinutes) * time.Minute
 }
 
 func FromCommandline() Config {

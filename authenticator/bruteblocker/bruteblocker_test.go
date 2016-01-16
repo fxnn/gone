@@ -12,10 +12,33 @@ var (
 	defaultUserStep   = 1 * time.Second
 	defaultAddrStep   = 100 * time.Millisecond
 	defaultGlobalStep = 50 * time.Millisecond
+	defaultDropAfter  = 10 * time.Second
 )
 
 func newSut() *BruteBlocker {
-	return New(defaultMax, defaultUserStep, defaultAddrStep, defaultGlobalStep)
+	return newSutDroppingAfter(defaultDropAfter)
+}
+
+func newSutDroppingAfter(dropAfter time.Duration) *BruteBlocker {
+	return New(
+		defaultMax,
+		defaultUserStep,
+		defaultAddrStep,
+		defaultGlobalStep,
+		dropAfter)
+}
+
+func TestCleanUp(t *testing.T) {
+
+	var sut = newSutDroppingAfter(0)
+
+	sut.Delay("user", "ip", false)
+	sut.CleanUp()
+
+	if delay := sut.Delay("user", "ip", false); delay != 0 {
+		t.Fatalf("Expected delay after cleanup to be 0, but was %v", delay)
+	}
+
 }
 
 func TestDelayPanicsAfterShutdown(t *testing.T) {

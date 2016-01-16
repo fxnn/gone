@@ -64,6 +64,7 @@ func NewHttpBasicAuthenticator(
 	userDelayStep time.Duration,
 	addrDelayStep time.Duration,
 	globalDelayStep time.Duration,
+	dropDelayAfter time.Duration,
 ) *HttpBasicAuthenticator {
 	var secretProvider = noSecrets
 	if !htpasswdFile.HasErr() && !htpasswdFile.IsEmpty() {
@@ -71,7 +72,11 @@ func NewHttpBasicAuthenticator(
 	}
 	var authenticationHandler = auth.NewBasicAuthenticator(authenticationRealmName, secretProvider)
 	var authenticationStore = newCookieAuthenticationStore()
-	var bruteBlocker = bruteblocker.New(delayMax, userDelayStep, addrDelayStep, globalDelayStep)
+	var bruteBlocker = bruteblocker.New(
+		delayMax,
+		userDelayStep, addrDelayStep, globalDelayStep,
+		dropDelayAfter,
+	)
 	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore, bruteBlocker}
 }
 
