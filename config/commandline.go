@@ -11,6 +11,7 @@ var out = os.Stderr
 var (
 	help                            bool
 	bindAddress                     string
+	requireSSLHeader                string
 	templatePath                    string
 	bruteforceMaxDelayMillis        int
 	bruteforceDelayStepMillis       int
@@ -24,6 +25,8 @@ func init() {
 
 	flag.StringVar(&bindAddress, "bind", DefaultBindAddress,
 		"The `address` and/or port to listen on")
+	flag.StringVar(&requireSSLHeader, "require-ssl-header", DefaultRequireSSLHeader,
+		"The `name` of a header to be required when logging in")
 	flag.StringVar(&templatePath, "template", DefaultTemplatePath,
 		"The `path` to a directory containing custom templates")
 
@@ -43,62 +46,45 @@ func init() {
 	}
 }
 
-type commandlineConfig struct {
-	// NOTE: We don't store argument values inside the struct atm,
-	// as those things are global per application instance anyways
-	command Command
-}
-
-func (c *commandlineConfig) Command() Command {
-	return c.command
-}
-
-func (c *commandlineConfig) BindAddress() string {
-	return bindAddress
-}
-
-func (c *commandlineConfig) TemplatePath() string {
-	return templatePath
-}
-
-func (c *commandlineConfig) BruteforceMaxDelay() time.Duration {
-	return time.Duration(bruteforceMaxDelayMillis) * time.Millisecond
-}
-
-func (c *commandlineConfig) BruteforceDelayStep() time.Duration {
-	return time.Duration(bruteforceDelayStepMillis) * time.Millisecond
-}
-
-func (c *commandlineConfig) BruteforceDropDelayAfter() time.Duration {
-	return time.Duration(bruteforceDropDelayAfterMinutes) * time.Minute
-}
-
 func FromCommandline() Config {
-	var config = &commandlineConfig{}
-	config.parseCommandline()
-	return config
+	var command = parseCommandline()
+
+	var c = Config{}
+	c.Command = command
+	c.BindAddress = bindAddress
+	c.RequireSSLHeader = requireSSLHeader
+	c.TemplatePath = templatePath
+	c.BruteforceMaxDelay = time.Duration(bruteforceMaxDelayMillis) * time.Millisecond
+	c.BruteforceDelayStep = time.Duration(bruteforceDelayStepMillis) * time.Millisecond
+	c.BruteforceDropDelayAfter = time.Duration(bruteforceDropDelayAfterMinutes) * time.Minute
+
+	return c
 }
 
-func (c *commandlineConfig) parseCommandline() {
+func parseCommandline() Command {
 	flag.Parse()
 
 	if flag.NArg() > 1 {
 		fmt.Fprintln(out, "No more than one command allowed")
 		PrintUsage()
 		os.Exit(2)
-	} else if flag.NArg() == 1 {
-		if cmd, err := StringToCommand(flag.Arg(0)); err == nil {
-			c.command = cmd
-		} else {
+	}
+
+	if flag.NArg() == 1 {
+		if cmd, err := StringToCommand(flag.Arg(0)); err != nil {
 			fmt.Fprintln(out, err)
 			PrintUsage()
 			os.Exit(2)
+		} else {
+			return cmd
 		}
-	} else if help {
-		c.command = CommandHelp
-	} else {
-		c.command = DefaultCommand
 	}
+
+	if help {
+		return CommandHelp
+	}
+
+	return DefaultCommand
 }
 
 func PrintUsage() {

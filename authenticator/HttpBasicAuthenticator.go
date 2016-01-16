@@ -10,6 +10,7 @@ import (
 	"github.com/abbot/go-http-auth"
 	"github.com/fxnn/gone/authenticator/bruteblocker"
 	"github.com/fxnn/gone/context"
+	"github.com/fxnn/gone/http/failer"
 	"github.com/fxnn/gone/http/router"
 	"github.com/fxnn/gopath"
 )
@@ -53,6 +54,7 @@ func authAttemptUser(request *http.Request) string {
 }
 
 type HttpBasicAuthenticator struct {
+	requireSSLHeader      string
 	authenticationHandler *auth.BasicAuth
 	authenticationStore   cookieAuthenticationStore
 	bruteBlocker          *bruteblocker.BruteBlocker
@@ -60,6 +62,7 @@ type HttpBasicAuthenticator struct {
 
 func NewHttpBasicAuthenticator(
 	htpasswdFile gopath.GoPath,
+	requireSSLHeader string,
 	delayMax time.Duration,
 	userDelayStep time.Duration,
 	addrDelayStep time.Duration,
@@ -77,7 +80,11 @@ func NewHttpBasicAuthenticator(
 		userDelayStep, addrDelayStep, globalDelayStep,
 		dropDelayAfter,
 	)
-	return &HttpBasicAuthenticator{authenticationHandler, authenticationStore, bruteBlocker}
+	return &HttpBasicAuthenticator{
+		requireSSLHeader,
+		authenticationHandler,
+		authenticationStore,
+		bruteBlocker}
 }
 
 func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler {
@@ -93,6 +100,12 @@ func (a *HttpBasicAuthenticator) AuthHandler(delegate http.Handler) http.Handler
 }
 
 func (a *HttpBasicAuthenticator) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if a.requireSSLHeader != "" && request.Header.Get(a.requireSSLHeader) == "" {
+		log.Printf("Deny login on missing SSL connection header %s", a.requireSSLHeader)
+		failer.ServeBadRequest(writer, request)
+		return
+	}
+
 	var user = authAttemptUser(request)
 	if user != "" {
 		a.checkAuth(request)

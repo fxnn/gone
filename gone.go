@@ -23,7 +23,7 @@ const defaultTemplateDirectoryName = ".templates"
 func main() {
 	cfg := config.FromCommandline()
 
-	switch cfg.Command() {
+	switch cfg.Command {
 	case config.CommandExportTemplates:
 		exportTemplates(cfg)
 	case config.CommandListen:
@@ -51,7 +51,7 @@ func listen(cfg config.Config) {
 	var store = filestore.New(cr, auth)
 	var loader = createLoader(cr, cfg)
 
-	http.ListenAndServe(cfg.BindAddress(), auth, store, loader)
+	http.ListenAndServe(cfg.BindAddress, auth, store, loader)
 }
 
 func createAuthenticator(
@@ -59,13 +59,17 @@ func createAuthenticator(
 	cfg config.Config,
 ) *authenticator.HttpBasicAuthenticator {
 	var htpasswdFile = htpasswdFilePath(contentRoot)
+	if cfg.RequireSSLHeader != "" {
+		log.Printf("Requiring SSL header %s on login", cfg.RequireSSLHeader)
+	}
 	return authenticator.NewHttpBasicAuthenticator(
 		htpasswdFile,
-		cfg.BruteforceMaxDelay(),
-		cfg.BruteforceDelayStep(),
-		cfg.BruteforceDelayStep()/5,
-		cfg.BruteforceDelayStep()/20,
-		cfg.BruteforceDropDelayAfter(),
+		cfg.RequireSSLHeader,
+		cfg.BruteforceMaxDelay,
+		cfg.BruteforceDelayStep,
+		cfg.BruteforceDelayStep/5,
+		cfg.BruteforceDelayStep/20,
+		cfg.BruteforceDropDelayAfter,
 	)
 }
 
@@ -91,7 +95,7 @@ func createLoader(contentRoot gopath.GoPath, cfg config.Config) templates.Loader
 
 func templatePath(contentRoot gopath.GoPath, cfg config.Config) (result gopath.GoPath) {
 	// configuration
-	result = gopath.FromPath(cfg.TemplatePath())
+	result = gopath.FromPath(cfg.TemplatePath)
 	if !result.IsEmpty() {
 		if !result.IsDirectory() {
 			log.Fatalf("configured template path is no directory: %s", result.Path())

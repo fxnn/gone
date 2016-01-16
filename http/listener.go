@@ -26,7 +26,10 @@ func ListenAndServe(
 	var editor = editor.New(loader, store)
 	var router = router.New(viewer, editor, auth)
 
-	var handlerChain = context.ClearHandler(auth.AuthHandler(router))
+	var handlerChain = RequestLogger(
+		context.ClearHandler(
+			auth.AuthHandler(
+				router)))
 
 	log.Fatal(http.ListenAndServe(bindAddress, handlerChain))
 }
