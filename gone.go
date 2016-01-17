@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
+	"github.com/fxnn/gone/authenticator/bruteblocker"
 	"github.com/fxnn/gone/config"
 	"github.com/fxnn/gone/http"
 	"github.com/fxnn/gone/http/templates"
@@ -47,29 +48,34 @@ func exportTemplates(cfg config.Config) {
 func listen(cfg config.Config) {
 	var cr = contentRoot()
 
-	var auth = createAuthenticator(cr, cfg)
+	var auth = authenticator.NewContextAuthenticator()
+	var httpAuth = createHttpAuthenticator(auth, cr, cfg)
 	var store = filestore.New(cr, auth)
 	var loader = createLoader(cr, cfg)
 
-	http.ListenAndServe(cfg.BindAddress, auth, store, loader)
+	http.ListenAndServe(cfg.BindAddress, httpAuth, store, loader)
 }
 
-func createAuthenticator(
+func createHttpAuthenticator(
+	auth authenticator.Authenticator,
 	contentRoot gopath.GoPath,
 	cfg config.Config,
-) *authenticator.HttpBasicAuthenticator {
-	var htpasswdFile = htpasswdFilePath(contentRoot)
-	if cfg.RequireSSLHeader != "" {
-		log.Printf("Requiring SSL header %s on login", cfg.RequireSSLHeader)
-	}
-	return authenticator.NewHttpBasicAuthenticator(
-		htpasswdFile,
-		cfg.RequireSSLHeader,
+) authenticator.HttpAuthenticator {
+	var bruteBlocker = bruteblocker.New(
 		cfg.BruteforceMaxDelay,
 		cfg.BruteforceDelayStep,
 		cfg.BruteforceDelayStep/5,
 		cfg.BruteforceDelayStep/20,
 		cfg.BruteforceDropDelayAfter,
+	)
+	if cfg.RequireSSLHeader != "" {
+		log.Printf("Requiring SSL header %s on login (by configuration)", cfg.RequireSSLHeader)
+	}
+	return authenticator.NewHttpBasicAuthenticator(
+		auth,
+		htpasswdFilePath(contentRoot),
+		cfg.RequireSSLHeader,
+		bruteBlocker,
 	)
 }
 

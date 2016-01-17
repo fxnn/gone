@@ -10,28 +10,31 @@ type Authenticator interface {
 	// authenticated caller.
 	IsAuthenticated(request *http.Request) bool
 
-	// UserId returns a unique identifier of the user being currently logged
+	// UserID returns a unique identifier of the user being currently logged
 	// in.
 	// If no user is logged in (therefore, if IsAuthenticated returns false),
-	// UserId returns the empty string.
-	UserId(request *http.Request) string
+	// UserID returns the empty string.
+	UserID(request *http.Request) string
+
+	// SetUserID sets the unique identifier of the user being currently logged
+	// in.
+	// Set this to the empty string to make no user being logged in.
+	SetUserID(writer http.ResponseWriter, request *http.Request, userID string)
 }
 
-// HttpAuthenticator provides Authenticator's information and additionally
-// allows the authentification of an user.
+// HttpAuthenticator allows the authentification of an user over an HTTP
+// protocol.
 //
 // Currently, it is tightly coupled to HTTP requests and even contains a UI
 // implementation.
 // Later, we should extract the UI part into the github.com/fxnn/gone/http
 // package.
 type HttpAuthenticator interface {
-	Authenticator
-
 	// AuthHandler can be part of the handler chain to read authentication
 	// information from the session associated with the request, prior to
 	// calling the delegate handler.
-	AuthHandler(delegate http.Handler) http.Handler
+	MiddlewareHandler(delegate http.Handler) http.Handler
 
-	// ServeHTTP serves an authentication UI.
-	ServeHTTP(writer http.ResponseWriter, request *http.Request)
+	// LoginHandler provides a handler that serves the login UI.
+	LoginHandler() http.Handler
 }
