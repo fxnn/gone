@@ -1,7 +1,7 @@
 package http
 
 import (
-	"log"
+	"github.com/fxnn/gone/log"
 	"net/http"
 	"strings"
 	"time"
