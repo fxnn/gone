@@ -9,6 +9,7 @@ func TestAlwaysAuthenticated(t *testing.T) {
 
 	var request, _ = http.NewRequest("GET", "", nil)
 	var sut = NewAlwaysAuthenticated()
+	sut.SetUserID(nil, request, "x") // should be ignored
 
 	if sut.UserID(request) != "" {
 		t.Fatalf("UserID is not '', but '%v'", sut.UserID(request))
@@ -23,6 +24,7 @@ func TestNeverAuthenticated(t *testing.T) {
 
 	var request, _ = http.NewRequest("GET", "", nil)
 	var sut = NewNeverAuthenticated()
+	sut.SetUserID(nil, request, "x") // should be ignored
 
 	if sut.UserID(request) != "" {
 		t.Fatalf("UserID is not '', but '%v'", sut.UserID(request))
