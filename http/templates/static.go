@@ -9,7 +9,8 @@ import (
 	"github.com/fxnn/gopath"
 )
 
-// StaticLoader loads templates from data packaged with the application binary.
+// StaticLoader is a Provider that loads templates from data packaged with the
+// application binary.
 type StaticLoader struct {
 	// useLocalTemplate tells the resource engine to load the templates from the
 	// working directory

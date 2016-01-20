@@ -19,6 +19,7 @@ type markdownFormatter struct {
 
 func newMarkdownFormatter(l templates.Loader) markdownFormatter {
 	// TODO: Preinitialize Markdown Renderer
+	// TODO #16: How to watch on changed templates?
 	return markdownFormatter{templates.LoadViewerTemplate(l)}
 }
 

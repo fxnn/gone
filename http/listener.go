@@ -20,8 +20,7 @@ func ListenAndServe(
 	bindAddress string,
 	auth authenticator.HttpAuthenticator,
 	store store.Store,
-	loader templates.Loader,
-) {
+	loader templates.Loader) {
 	var viewer = viewer.New(loader, store)
 	var editor = editor.New(loader, store)
 	var router = router.New(viewer, editor, auth.LoginHandler())

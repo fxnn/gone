@@ -8,7 +8,9 @@ import (
 	"github.com/fxnn/gopath"
 )
 
-// FilesystemLoader loads templates from data packaged with the application binary.
+// FilesystemLoader is a Provider that loads templates from the filesystem.
+// It only loads the template once and then holds it in memory.
+// It reloads the template after the file changed.
 type FilesystemLoader struct {
 	root gopath.GoPath
 }
@@ -26,8 +28,12 @@ func NewFilesystemLoader(root gopath.GoPath) *FilesystemLoader {
 	return &FilesystemLoader{root}
 }
 
+func (l *FilesystemLoader) templatePath(name string) gopath.GoPath {
+	return l.root.JoinPath(name)
+}
+
 func (l *FilesystemLoader) LoadHtmlTemplate(name string) Template {
-	p := l.root.JoinPath(name)
+	p := l.templatePath(name)
 	contentBytes, err := ioutil.ReadFile(p.Path())
 	if err != nil {
 		return newWithError(fmt.Errorf("couldn't load template %s: %s", p.Path(), err))
