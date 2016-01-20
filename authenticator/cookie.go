@@ -1,12 +1,13 @@
 package authenticator
 
 import (
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+
+	"github.com/fxnn/gone/log"
 )
 
 const (

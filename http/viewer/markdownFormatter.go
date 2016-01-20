@@ -3,9 +3,10 @@ package viewer
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/fxnn/gone/log"
 
 	"github.com/fxnn/gone/http/failer"
 	"github.com/fxnn/gone/http/templates"

@@ -2,8 +2,9 @@ package viewer
 
 import (
 	"io"
-	"log"
 	"net/http"
+
+	"github.com/fxnn/gone/log"
 
 	"github.com/fxnn/gone/http/failer"
 )
@@ -20,12 +21,10 @@ func (f rawFormatter) serveFromReader(reader io.Reader, writer http.ResponseWrit
 	writer.Header().Set("Content-Type", f.mimeType)
 
 	// TODO: Use http.ServeContent instead
-	written, err := io.Copy(writer, reader)
+	_, err := io.Copy(writer, reader)
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)
 		return
 	}
-
-	log.Printf("%s %s: wrote %d bytes", request.Method, request.URL, written)
 }
