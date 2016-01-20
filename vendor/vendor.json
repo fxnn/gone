@@ -51,6 +51,11 @@
 			"path": "golang.org/x/net/context",
 			"revision": "01256db42e5106196a3473ec1620727a383500e8",
 			"revisionTime": "2015-10-02T11:57:39+10:00"
+		},
+		{
+			"path": "gopkg.in/fsnotify.v1",
+			"revision": "8611c35ab31c1c28aa903d33cf8b6e44a399b09e",
+			"revisionTime": "2016-01-10T16:04:37+01:00"
 		}
 	]
 }
