@@ -14,9 +14,24 @@ type ViewerTemplate struct {
 }
 
 func LoadViewerTemplate(loader Loader) ViewerTemplate {
-	return ViewerTemplate{
+	return NewViewerTemplate(
 		loader.LoadHtmlTemplate(viewerTemplateName),
-	}
+	)
+}
+
+func NewViewerTemplate(t Template) ViewerTemplate {
+	return ViewerTemplate{t}
+}
+
+func WatchViewerTemplate(loader Loader) <-chan ViewerTemplate {
+	var viewerTemplateChan = make(chan ViewerTemplate)
+	go func() {
+		for template := range loader.WatchHtmlTemplate(viewerTemplateName) {
+			viewerTemplateChan <- NewViewerTemplate(template)
+		}
+		close(viewerTemplateChan)
+	}()
+	return viewerTemplateChan
 }
 
 func (t *ViewerTemplate) Render(writer io.Writer, url *url.URL, htmlContent string) {
