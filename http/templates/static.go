@@ -9,7 +9,13 @@ import (
 	"github.com/fxnn/gopath"
 )
 
-// StaticLoader is a Provider that loads templates from data packaged with the
+var neverUpdatedTemplateChan <-chan Template
+
+func init() {
+	neverUpdatedTemplateChan = make(chan Template)
+}
+
+// StaticLoader is a Loader that loads templates from data packaged with the
 // application binary.
 type StaticLoader struct {
 	// useLocalTemplate tells the resource engine to load the templates from the
@@ -68,5 +74,15 @@ func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
 		}
 	}
 
+	return nil
+}
+
+// WatchHtmlTemplate returns a channel that will never receive anything.
+func (l *StaticLoader) WatchHtmlTemplate(name string) <-chan Template {
+	return neverUpdatedTemplateChan
+}
+
+// Close does nothing.
+func (l *StaticLoader) Close() error {
 	return nil
 }
