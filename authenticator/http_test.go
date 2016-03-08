@@ -40,6 +40,49 @@ func TestMiddlewareHandler_copiesUserId(t *testing.T) {
 	}
 }
 
+func TestLoginHandler_existingHeader(t *testing.T) {
+	var requestAuth = newMockAuthenticator()
+	var sessionAuth = newMockAuthenticator()
+	var sut = sutWithBruteblockerRequestAuthSessionAuthAndBasicAuth(requestAuth, sessionAuth, aladdinsSecret)
+	var req = requestWithAladdinUser()
+	var rsp = newMockResponseWriter()
+
+	sut.loginRequiresHeader = "Test-Header"
+	req.Header.Add("Test-Header", "existing")
+	sut.LoginHandler().ServeHTTP(rsp, req)
+
+	if userID := requestAuth.UserID(req); userID != "Aladdin" {
+		t.Fatalf("Expected request user to be Aladdin, but was '%v'", userID)
+	}
+	if userID := sessionAuth.UserID(req); userID != "Aladdin" {
+		t.Fatalf("Expected session user to be Aladdin, but was '%v'", userID)
+	}
+	if rsp.status != http.StatusFound {
+		t.Fatalf("Expected status authorized, was '%v'", rsp.status)
+	}
+}
+
+func TestLoginHandler_missingHeader(t *testing.T) {
+	var requestAuth = newMockAuthenticator()
+	var sessionAuth = newMockAuthenticator()
+	var sut = sutWithBruteblockerRequestAuthSessionAuthAndBasicAuth(requestAuth, sessionAuth, aladdinsSecret)
+	var req = requestWithAladdinUser()
+	var rsp = newMockResponseWriter()
+
+	sut.loginRequiresHeader = "test"
+	sut.LoginHandler().ServeHTTP(rsp, req)
+
+	if userID := requestAuth.UserID(req); userID != "" {
+		t.Fatalf("Expected request user to be empty, but was '%v'", userID)
+	}
+	if userID := sessionAuth.UserID(req); userID != "" {
+		t.Fatalf("Expected session user to be empty, but was '%v'", userID)
+	}
+	if rsp.status != http.StatusBadRequest {
+		t.Fatalf("Expected status bad request, was '%v'", rsp.status)
+	}
+}
+
 func TestLoginHandler_rightCredentials(t *testing.T) {
 	var requestAuth = newMockAuthenticator()
 	var sessionAuth = newMockAuthenticator()
