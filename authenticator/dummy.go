@@ -47,3 +47,26 @@ func (NeverAuthenticated) UserID(request *http.Request) string {
 func (NeverAuthenticated) SetUserID(responseWriter http.ResponseWriter, request *http.Request, userId string) {
 	// nothing to do
 }
+
+type mockAuthenticator struct {
+	userID string
+}
+
+// Ensure that Authenticator interface is implemented
+var _ Authenticator = (*mockAuthenticator)(nil)
+
+func newMockAuthenticator() *mockAuthenticator {
+	return &mockAuthenticator{}
+}
+
+func (a *mockAuthenticator) IsAuthenticated(request *http.Request) bool {
+	return a.userID != ""
+}
+
+func (a *mockAuthenticator) UserID(request *http.Request) string {
+	return a.userID
+}
+
+func (a *mockAuthenticator) SetUserID(responseWriter http.ResponseWriter, request *http.Request, userID string) {
+	a.userID = userID
+}
