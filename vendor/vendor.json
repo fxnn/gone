@@ -53,6 +53,11 @@
 			"revisionTime": "2015-10-02T11:57:39+10:00"
 		},
 		{
+			"path": "golang.org/x/sys/unix",
+			"revision": "7a56174f0086b32866ebd746a794417edbc678a1",
+			"revisionTime": "2016-03-02T21:58:15+02:00"
+		},
+		{
 			"path": "gopkg.in/fsnotify.v1",
 			"revision": "8611c35ab31c1c28aa903d33cf8b6e44a399b09e",
 			"revisionTime": "2016-01-10T16:04:37+01:00"
