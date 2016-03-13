@@ -35,6 +35,20 @@ func TestCreateFileDeniesWhenWorldWritePermissionIsMissing(t *testing.T) {
 	}
 }
 
+// https://github.com/fxnn/gone/issues/9
+func TestCreateFileDeniesWhenOwnerWritePermissionIsMissing(t *testing.T) {
+	tmpdir := createTempDirInCurrentwd(t, 0555) // No write at all
+	defer removeTempDirFromCurrentwd(t, tmpdir)
+
+	sut := sutAuthenticated(t)
+
+	writeCloser := sut.OpenWriter(requestGET("/" + tmpdir + "/newFile"))
+	closed(writeCloser)
+	if err := sut.Err(); err == nil || !store.IsAccessDeniedError(err) {
+		t.Fatalf("expected AccessDeniedError on %s, but got %s", tmpdir+"/newFile", err)
+	}
+}
+
 // https://github.com/fxnn/gone/issues/7 No.2 negative execute
 func TestCreateFileDeniesWhenWorldExecutePermissionIsMissing(t *testing.T) {
 	tmpdir := createTempDirInCurrentwd(t, 0772) // World write flag

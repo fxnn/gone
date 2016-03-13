@@ -37,17 +37,46 @@ func (i *pathIO) openReaderAtPath(p gopath.GoPath) (reader io.ReadCloser) {
 
 func (i *pathIO) openWriterAtPath(p gopath.GoPath) (writer io.WriteCloser) {
 	i.assertPathValidForAnyAccess(p)
+	i.assertPathValidForWriteAccess(p)
 	if i.hasErr() {
 		return nil
 	}
 
 	writer, err := os.Create(p.Path())
-	i.setErr(err)
+	if err != nil {
+		i.setErr(fmt.Errorf("open writer: %s", err))
+	}
+
 	return
 }
 
 func (i *pathIO) assertPathExists(p gopath.GoPath) {
 	i.syncedErrs(p.AssertExists())
+}
+
+// assertPathValidForWriteAccess sets the error flag when the path may not be
+// opened for writing by this process.
+func (i *pathIO) assertPathValidForWriteAccess(p gopath.GoPath) {
+	if i.hasErr() {
+		return
+	}
+	if p.HasErr() {
+		i.setErr(p.Err())
+		return
+	}
+
+	if p.IsExists() {
+		if !p.IsRegular() || !isPathWriteable(p) {
+			i.setErr(store.NewAccessDeniedError(
+				"cannot create file as its no regular file or not writeable: " + p.Path()))
+		}
+	} else {
+		var d = p.Dir()
+		if !isPathWriteable(d) {
+			i.setErr(store.NewAccessDeniedError(
+				"cannot create file as parent directory is not writeable: " + p.Path()))
+		}
+	}
 }
 
 // assertPathValidForAnyAccess sets the error flag when the path may not be
