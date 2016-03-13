@@ -2,7 +2,7 @@ language: go
 
 go:
   - tip
-  - 1.6beta1
+  - 1.6
 
 matrix:
   include:
