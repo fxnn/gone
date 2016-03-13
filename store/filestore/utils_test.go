@@ -37,8 +37,12 @@ func createTempSymlinkInCurrentwd(t *testing.T, target string) string {
 }
 
 func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
+	return createPrefixedTempWdInCurrentwd(t, mode, "")
+}
+
+func createPrefixedTempWdInCurrentwd(t *testing.T, mode os.FileMode, prefix string) string {
 	wd := getwd(t)
-	tempDirName := createTempDirInCurrentwd(t, mode)
+	tempDirName := createPrefixedTempDirInCurrentwd(t, mode, prefix)
 	tempWd := path.Join(wd, tempDirName)
 	if err := os.Chdir(tempWd); err != nil {
 		t.Fatalf("couldnt change wd to %s: %s", tempWd, err)
@@ -47,8 +51,12 @@ func createTempWdInCurrentwd(t *testing.T, mode os.FileMode) string {
 }
 
 func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
+	return createPrefixedTempDirInCurrentwd(t, mode, "")
+}
+
+func createPrefixedTempDirInCurrentwd(t *testing.T, mode os.FileMode, prefix string) string {
 	wd := getwd(t)
-	tmpdir, err := ioutil.TempDir(wd, "gone_test_")
+	tmpdir, err := ioutil.TempDir(wd, prefix+"gone_test_")
 	if err != nil {
 		t.Fatalf("couldnt create tempdir in %s: %s", wd, err)
 	}
@@ -60,8 +68,12 @@ func createTempDirInCurrentwd(t *testing.T, mode os.FileMode) string {
 }
 
 func createTempFileInCurrentwd(t *testing.T, mode os.FileMode) string {
+	return createPrefixedTempFileInCurrentwd(t, mode, "")
+}
+
+func createPrefixedTempFileInCurrentwd(t *testing.T, mode os.FileMode, prefix string) string {
 	wd := getwd(t)
-	tmpfile, err := ioutil.TempFile(wd, "gone_test_")
+	tmpfile, err := ioutil.TempFile(wd, prefix+"gone_test_")
 	if err != nil {
 		t.Fatalf("couldnt create tempfile in %s: %s", wd, err)
 	}

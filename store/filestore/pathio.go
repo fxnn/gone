@@ -99,6 +99,10 @@ func (i *pathIO) assertFileIsNotHidden(p gopath.GoPath) {
 	if strings.HasPrefix(p.Base(), ".") {
 		i.setErr(store.NewPathNotFoundError(fmt.Sprintf("%s is a hidden file and may not be displayed", p)))
 	}
+
+	if i.isPathInsideContentRoot(p) {
+		i.assertFileIsNotHidden(p.Dir())
+	}
 }
 
 func (i *pathIO) assertPathInsideContentRoot(p gopath.GoPath) {
@@ -106,13 +110,21 @@ func (i *pathIO) assertPathInsideContentRoot(p gopath.GoPath) {
 		return
 	}
 
-	var normalizedPath = i.normalizePath(p)
-
-	if !p.HasErr() && !strings.HasPrefix(normalizedPath.Path(), i.contentRoot.Path()) {
+	if !i.isPathInsideContentRoot(p) {
 		i.setErr(store.NewPathNotFoundError(
 			fmt.Sprintf("%s is not inside content root %s", p, i.contentRoot),
 		))
 	}
+}
+
+func (i *pathIO) isPathInsideContentRoot(p gopath.GoPath) bool {
+	var normalizedPath = i.normalizePath(p)
+
+	if !normalizedPath.HasErr() {
+		return strings.HasPrefix(normalizedPath.Path(), i.contentRoot.Path())
+	}
+
+	return false
 }
 
 // pathFromRequest maps the request to the filesystem.
