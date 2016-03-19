@@ -7,7 +7,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/fxnn/gone/authenticator"
@@ -15,6 +14,7 @@ import (
 	"github.com/fxnn/gone/config"
 	"github.com/fxnn/gone/http"
 	"github.com/fxnn/gone/http/templates"
+	"github.com/fxnn/gone/log"
 	"github.com/fxnn/gone/store/filestore"
 	"github.com/fxnn/gopath"
 )

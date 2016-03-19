@@ -1,8 +1,9 @@
 package store
 
 import (
-	"log"
 	"mime"
+
+	"github.com/fxnn/gone/log"
 )
 
 const (

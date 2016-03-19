@@ -1,7 +1,6 @@
 package authenticator
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/fxnn/gone/authenticator/bruteblocker"
 	"github.com/fxnn/gone/http/failer"
 	"github.com/fxnn/gone/http/router"
+	"github.com/fxnn/gone/log"
 	"github.com/fxnn/gopath"
 )
 

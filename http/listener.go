@@ -1,7 +1,6 @@
 package http
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/fxnn/gone/authenticator"
@@ -9,6 +8,7 @@ import (
 	"github.com/fxnn/gone/http/router"
 	"github.com/fxnn/gone/http/templates"
 	"github.com/fxnn/gone/http/viewer"
+	"github.com/fxnn/gone/log"
 	"github.com/fxnn/gone/store"
 
 	"github.com/gorilla/context"

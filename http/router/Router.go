@@ -1,9 +1,10 @@
 package router
 
 import (
-	"github.com/fxnn/gone/http/failer"
-	"log"
 	"net/http"
+
+	"github.com/fxnn/gone/http/failer"
+	"github.com/fxnn/gone/log"
 )
 
 // Router encapsulates http.Handler instances for all relevant views and
