@@ -1,35 +1,36 @@
 package templates
 
 import (
+	"fmt"
 	"io"
 	"net/url"
 )
 
 const editorTemplateName string = "/editor.html"
 
-// EditorTemplate is the template for the edit UI.
+// EditorRenderer renders the edit UI from a go HTML template.
 // Always check the Err() result!
-type EditorTemplate struct {
-	Template
+type EditorRenderer struct {
+	*renderer
 }
 
-func LoadEditorTemplate(loader Loader) EditorTemplate {
-	return EditorTemplate{
-		loader.LoadHtmlTemplate(editorTemplateName),
+func NewEditorRenderer() *EditorRenderer {
+	return &EditorRenderer{
+		newRenderer(editorTemplateName),
 	}
 }
 
-func (t *EditorTemplate) Render(writer io.Writer, url *url.URL, content string, edit bool) {
-	if t.err != nil {
-		return
-	}
-
-	var data = make(map[string]string)
+func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string, edit bool) error {
+	var data = make(map[string]interface{})
 	data["path"] = url.Path
 	data["content"] = content
 	if edit {
 		data["edit"] = "edit"
 	}
 
-	t.Execute(writer, data)
+	if err := r.renderData(writer, data); err != nil {
+		return fmt.Errorf("couldn't render editor template: %s", err)
+	}
+
+	return nil
 }

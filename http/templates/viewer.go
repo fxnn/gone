@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"net/url"
@@ -8,40 +9,22 @@ import (
 
 const viewerTemplateName string = "/viewer.html"
 
-// Always check the Err() result!
-type ViewerTemplate struct {
-	Template
+type ViewerRenderer struct {
+	*renderer
 }
 
-func LoadViewerTemplate(loader Loader) ViewerTemplate {
-	return NewViewerTemplate(
-		loader.LoadHtmlTemplate(viewerTemplateName),
-	)
+func NewViewerRenderer() *ViewerRenderer {
+	return &ViewerRenderer{newRenderer(viewerTemplateName)}
 }
 
-func NewViewerTemplate(t Template) ViewerTemplate {
-	return ViewerTemplate{t}
-}
-
-func WatchViewerTemplate(loader Loader) <-chan ViewerTemplate {
-	var viewerTemplateChan = make(chan ViewerTemplate)
-	go func() {
-		for template := range loader.WatchHtmlTemplate(viewerTemplateName) {
-			viewerTemplateChan <- NewViewerTemplate(template)
-		}
-		close(viewerTemplateChan)
-	}()
-	return viewerTemplateChan
-}
-
-func (t *ViewerTemplate) Render(writer io.Writer, url *url.URL, htmlContent string) {
-	if t.err != nil {
-		return
-	}
-
+func (r ViewerRenderer) Render(writer io.Writer, url *url.URL, htmlContent string) error {
 	var data = make(map[string]interface{})
 	data["path"] = url.Path
 	data["htmlContent"] = template.HTML(htmlContent)
 
-	t.Execute(writer, data)
+	if err := r.renderData(writer, data); err != nil {
+		return fmt.Errorf("couldn't render viewer template: %s", err)
+	}
+
+	return nil
 }

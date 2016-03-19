@@ -21,18 +21,18 @@ const (
 // implements the logic behind the UI.
 type Editor struct {
 	store    store.Store
-	template templates.EditorTemplate
+	renderer *templates.EditorRenderer
 }
 
 // New initializes a new instance ready to use.
 // The instance includes a loaded and parsed template.
 func New(l templates.Loader, s store.Store) *Editor {
-	var template = templates.LoadEditorTemplate(l)
-	if err := template.Err(); err != nil {
-		panic(err)
+	var renderer = templates.NewEditorRenderer()
+	if err := renderer.LoadAndWatch(l); err != nil {
+		panic(fmt.Errorf("couldn't load editor template: %s", err))
 	}
 
-	return &Editor{s, template}
+	return &Editor{s, renderer}
 }
 
 func (e *Editor) isServeWriter(request *http.Request) bool {
@@ -154,8 +154,8 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	e.template.Render(writer, request.URL, content, router.IsModeEdit(request))
-	if err := e.template.Err(); err != nil {
+	err := e.renderer.Render(writer, request.URL, content, router.IsModeEdit(request))
+	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)
 		return

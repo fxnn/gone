@@ -9,10 +9,10 @@ import (
 	"github.com/fxnn/gopath"
 )
 
-var neverUpdatedTemplateChan <-chan Template
+var neverUpdatedTemplateChan <-chan *template.Template
 
 func init() {
-	neverUpdatedTemplateChan = make(chan Template)
+	neverUpdatedTemplateChan = make(chan *template.Template)
 }
 
 // StaticLoader is a Loader that loads templates from data packaged with the
@@ -34,17 +34,20 @@ func NewStaticLoaderFromWorkingDirectory() *StaticLoader {
 	return &StaticLoader{true}
 }
 
-func (l *StaticLoader) LoadHtmlTemplate(name string) Template {
+func (l *StaticLoader) LoadHtmlTemplate(name string) (*template.Template, error) {
 	content, err := resources.FSString(l.useLocalTemplates, name)
 	if err != nil {
-		return newWithError(fmt.Errorf("couldn't load template %s: %s", name, err))
+		return nil, fmt.Errorf("couldn't load template %s: %s", name, err)
 	}
 
 	htmlTemplate, err := template.New(name).Parse(content)
 	if err != nil {
-		return newWithError(fmt.Errorf("couldn't parse template %s: %s", name, err))
+		return nil, fmt.Errorf("couldn't parse template %s: %s", name, err)
 	}
-	return newFromHtmlTemplate(htmlTemplate)
+	if htmlTemplate == nil {
+		return nil, fmt.Errorf("template %s parsed to nil", name)
+	}
+	return htmlTemplate, nil
 }
 
 func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
@@ -78,7 +81,7 @@ func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
 }
 
 // WatchHtmlTemplate returns a channel that will never receive anything.
-func (l *StaticLoader) WatchHtmlTemplate(name string) <-chan Template {
+func (l *StaticLoader) WatchHtmlTemplate(name string) <-chan *template.Template {
 	return neverUpdatedTemplateChan
 }
 
