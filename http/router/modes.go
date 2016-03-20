@@ -10,11 +10,12 @@ type Mode string
 // Mode-Constants give names to each mode the wiki application might be in.
 // The mode names are used to identify the desired mode in a URL.
 const (
-	ModeView   Mode = ""
-	ModeEdit        = "edit"
-	ModeCreate      = "create"
-	ModeLogin       = "login"
-	ModeDelete      = "delete"
+	ModeView     Mode = ""
+	ModeEdit          = "edit"
+	ModeCreate        = "create"
+	ModeLogin         = "login"
+	ModeDelete        = "delete"
+	ModeTemplate      = "template"
 )
 
 // To returns a URL that points to the same resource, but lets the
@@ -33,7 +34,7 @@ func Is(m Mode, r *http.Request) bool {
 	switch m {
 	case ModeView:
 		ok = !Is(ModeEdit, r) && !Is(ModeCreate, r) && !Is(ModeDelete, r)
-	case ModeEdit, ModeDelete, ModeCreate, ModeLogin:
+	case ModeEdit, ModeDelete, ModeCreate, ModeLogin, ModeTemplate:
 		_, ok = r.Form[string(m)]
 	}
 

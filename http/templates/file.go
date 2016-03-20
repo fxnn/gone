@@ -3,7 +3,9 @@ package templates
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/fsnotify.v1"
 
@@ -52,8 +54,26 @@ func (l *FilesystemLoader) templatePath(name string) gopath.GoPath {
 	return l.root.JoinPath(name)
 }
 
+func (l *FilesystemLoader) LoadResource(name string) (io.ReadCloser, error) {
+	p := l.templatePath(name)
+	if p.Err() != nil {
+		return nil, fmt.Errorf("couldn't load template resource %s: %s", name, p.Err())
+	}
+
+	file, err := os.Open(p.Path())
+	if err != nil {
+		return nil, fmt.Errorf("couldn't load template resource %s: %s", p.Path(), err)
+	}
+
+	return file, nil
+}
+
 func (l *FilesystemLoader) LoadHtmlTemplate(name string) (*template.Template, error) {
 	p := l.templatePath(name)
+	if p.Err() != nil {
+		return nil, fmt.Errorf("couldn't load template %s: %s", name, p.Err())
+	}
+
 	contentBytes, err := ioutil.ReadFile(p.Path())
 	if err != nil {
 		return nil, fmt.Errorf("couldn't load template %s: %s", p.Path(), err)

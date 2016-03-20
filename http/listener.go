@@ -21,9 +21,10 @@ func ListenAndServe(
 	auth authenticator.HttpAuthenticator,
 	store store.Store,
 	loader templates.Loader) {
+	var templateDeliverer = templates.NewTemplateDeliverer(loader)
 	var viewer = viewer.New(loader, store)
 	var editor = editor.New(loader, store)
-	var router = router.New(viewer, editor, auth.LoginHandler())
+	var router = router.New(viewer, editor, templateDeliverer, auth.LoginHandler())
 
 	var handlerChain = RequestLogger(
 		context.ClearHandler(

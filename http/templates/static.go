@@ -3,6 +3,7 @@ package templates
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"os"
 
 	"github.com/fxnn/gone/resources"
@@ -32,6 +33,15 @@ func NewStaticLoader() *StaticLoader {
 // and loads the templates from the application's source directory.
 func NewStaticLoaderFromWorkingDirectory() *StaticLoader {
 	return &StaticLoader{true}
+}
+
+func (l *StaticLoader) LoadResource(name string) (io.ReadCloser, error) {
+	file, err := resources.FS(l.useLocalTemplates).Open(name)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't open template resource %s: %s", name, err)
+	}
+
+	return file, nil
 }
 
 func (l *StaticLoader) LoadHtmlTemplate(name string) (*template.Template, error) {

@@ -1,12 +1,18 @@
 package templates
 
-import "html/template"
+import (
+	"html/template"
+	"io"
+)
 
 // Loader encapsulates how to retrieve a template by its name.
 // Concrete implementations could load data packaged with the binary, files
 // from filesystem or even network resources.
 // Caching is not the duty of a Loader.
 type Loader interface {
+	// LoadResource loads a resource from the template source as ReadCloser.
+	LoadResource(name string) (io.ReadCloser, error)
+
 	// LoadHtmlTemplate loads the template with the given name.
 	LoadHtmlTemplate(name string) (*template.Template, error)
 

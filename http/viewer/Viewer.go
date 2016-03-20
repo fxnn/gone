@@ -54,8 +54,8 @@ func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	defer readCloser.Close()
 	formatter.serveFromReader(readCloser, writer, request)
-	readCloser.Close()
 }
 
 func (v *Viewer) formatterForRequest(request *http.Request) formatter {
