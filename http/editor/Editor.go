@@ -40,15 +40,15 @@ func (e *Editor) isServeWriter(request *http.Request) bool {
 }
 
 func (e *Editor) isServeDeleter(request *http.Request) bool {
-	return request.Method == "GET" && router.IsModeDelete(request)
+	return request.Method == "GET" && router.Is(router.ModeDelete, request)
 }
 
 func (e *Editor) isServeEditUI(request *http.Request) bool {
-	return request.Method == "GET" && router.IsModeEdit(request)
+	return request.Method == "GET" && router.Is(router.ModeEdit, request)
 }
 
 func (e *Editor) isServeCreateUI(request *http.Request) bool {
-	return request.Method == "GET" && router.IsModeCreate(request)
+	return request.Method == "GET" && router.Is(router.ModeCreate, request)
 }
 
 func (e *Editor) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -125,7 +125,7 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		failer.ServeUnauthorized(writer, request)
 		return
 	}
-	if !router.IsModeCreate(request) && !e.store.HasReadAccessForRequest(request) {
+	if !router.Is(router.ModeCreate, request) && !e.store.HasReadAccessForRequest(request) {
 		log.Printf("%s %s: no read permissions", request.Method, request.URL)
 		failer.ServeUnauthorized(writer, request)
 		return
@@ -143,18 +143,18 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 			log.Printf("%s %s: %s", request.Method, request.URL, err)
 			failer.ServeInternalServerError(writer, request)
 			return
-		} else if router.IsModeEdit(request) {
+		} else if router.Is(router.ModeEdit, request) {
 			log.Printf("%s %s: file to be edited does not exist: %s", request.Method, request.URL, err)
 			failer.ServeNotFound(writer, request)
 			return
 		}
-	} else if router.IsModeCreate(request) {
+	} else if router.Is(router.ModeCreate, request) {
 		log.Printf("%s %s: file to be created already exists: %s", request.Method, request.URL, err)
 		failer.ServeConflict(writer, request)
 		return
 	}
 
-	err := e.renderer.Render(writer, request.URL, content, router.IsModeEdit(request))
+	err := e.renderer.Render(writer, request.URL, content, router.Is(router.ModeEdit, request))
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)

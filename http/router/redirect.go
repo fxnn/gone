@@ -6,11 +6,11 @@ import (
 )
 
 func RedirectToViewMode(writer http.ResponseWriter, request *http.Request) {
-	Redirect(writer, request, ToModeView(request.URL))
+	Redirect(writer, request, To(ModeView, request.URL))
 }
 
 func RedirectToEditMode(writer http.ResponseWriter, request *http.Request) {
-	Redirect(writer, request, ToModeEdit(request.URL))
+	Redirect(writer, request, To(ModeEdit, request.URL))
 }
 
 func Redirect(writer http.ResponseWriter, request *http.Request, location *url.URL) {
