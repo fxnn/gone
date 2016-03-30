@@ -65,7 +65,7 @@ func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
 		return fmt.Errorf("couldn't create dir %s: %s", targetDir, err)
 	}
 
-	for _, name := range []string{"/editor.html", "/viewer.html"} {
+	for _, name := range resources.AllFileNames {
 		var targetFile = targetDir.JoinPath(name)
 		if targetFile.HasErr() {
 			return fmt.Errorf("couldn't create path for template %s: %s", name, targetFile.Err())
@@ -74,6 +74,11 @@ func (l *StaticLoader) WriteAllTemplates(targetDir gopath.GoPath) error {
 		content, err := resources.FSString(l.useLocalTemplates, name)
 		if err != nil {
 			return fmt.Errorf("couldn't open template %s: %s", name, err)
+		}
+
+		err = os.MkdirAll(targetFile.Dir().Path(), 0777)
+		if err != nil {
+			return fmt.Errorf("couldn't create directory %s: %s", targetFile.Dir().Path(), err)
 		}
 
 		out, err := os.Create(targetFile.Path())

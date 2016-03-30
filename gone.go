@@ -22,6 +22,8 @@ import (
 const defaultTemplateDirectoryName = ".templates"
 
 func main() {
+	log.Printf("--- gone startup ---")
+
 	cfg := config.FromCommandline()
 
 	switch cfg.Command {
