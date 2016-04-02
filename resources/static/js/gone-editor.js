@@ -9,6 +9,7 @@ var GoneEditor = new(function() {
     };
 
     this.init = function() {
+		_initACE();
         _bindUIEvents();
     };
     
@@ -39,6 +40,14 @@ var GoneEditor = new(function() {
     var _bindUIEvents = function() {
         document.addEventListener('DOMContentLoaded', _initUI);
     };
+
+	var _initACE = function() {
+		// TODO: Improve this SOMEHOW
+    	ace.config.setModuleUrl("ace/theme/chrome", "/js/ace/theme-chrome.js?template");
+    	ace.config.setModuleUrl("ace/mode/javascript", "/js/ace/mode-javascript.js?template");
+    	ace.config.setModuleUrl("ace/mode/html", "/js/ace/mode-html.js?template");
+    	ace.config.setModuleUrl("ace/mode/css", "/js/ace/mode-css.js?template");
+	};
     
 })();
 GoneEditor.init();

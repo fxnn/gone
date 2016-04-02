@@ -14,7 +14,7 @@ SRC_URL="https://github.com/ajaxorg/ace-builds/archive/v${LIB_V}.tar.gz"
 SRC_FILE="ace-builds-${LIB_V}.tar.gz"
 SRC_VARIANT="src-min"
 TMP_DIR="ace-builds-${LIB_V}" # as contained in tar file
-TRG_DIR="static/ace"
+TRG_DIR="static/js/ace"
 
 # download
 wget -nv -O "${SRC_FILE}" "${SRC_URL}"
@@ -29,7 +29,8 @@ tar -xvzf "${SRC_FILE}"
 mkdir -p "${TRG_DIR}"
 [[ ! -d "${TRG_DIR}" ]] && { echo "Couldnt create target dir ${TRG_DIR}" ; exit 1 ; }
 
-for FILE_NAME in "ace.js" "mode-css.js" "mode-html.js" "mode-javascript.js"; do
+cp -f "${TMP_DIR}/LICENSE" "${TRG_DIR}"
+for FILE_NAME in "ace.js" "mode-css.js" "mode-html.js" "mode-javascript.js" "theme-chrome.js"; do
 	cp -f "${TMP_DIR}/${SRC_VARIANT}/${FILE_NAME}" "${TRG_DIR}/${FILE_NAME}"
 done
 
