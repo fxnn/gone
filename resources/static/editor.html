@@ -8,7 +8,7 @@
 
 	<style type="text/css">
 		/* <![CDATA[ */
-		#editor { 
+		div.ace-editor { 
 			position: absolute;
 			top: 0;
 			right: 0;
@@ -16,7 +16,7 @@
 			left: 0;
 			z-index:50;
 		}
-		#controls {
+		.controls {
 			position: absolute;
 			height: 40px;
 			bottom: 0;
@@ -25,7 +25,7 @@
 			z-index: 100;
 			background-color: #eee;
 		}
-		#controls .control-row {
+		.controls .row {
 		    margin: 8px;
 		}
 		/* ]]> */
@@ -33,14 +33,14 @@
 </head>
 
 <body>
-	<form method="POST" action="{{.path}}">
+	<form id="frm-edit" method="POST" action="{{.path}}">
 		<input type="hidden" name="edit" value="edit" />
 
-		<textarea name="content" rows="20">{{.content}}</textarea>
-		<div id="editor"></div>
+		<textarea id="frm-edit__inp-content" name="content" rows="20">{{.content}}</textarea>
+		<div id="frm-edit__cnt-editor" class="ace-editor"></div>
 
-		<div id="controls">
-		    <div class="control-row">
+		<div id="frm-edit__cnt-controls" class="controls">
+		    <div class="row">
     			<input type="submit" name="save" value="Save" />
     			<input type="submit" name="saveAndReturn" value="Save and Return" />
     			{{if .edit}}
@@ -50,18 +50,8 @@
 		</div>
 	</form>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script>
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/chrome");
-    
-        var textarea = $('textarea[name="content"]').hide();
-        editor.getSession().setValue(textarea.val());
-        textarea.closest('form').submit(function() {
-            textarea.val(editor.getSession().getValue());
-        });
-    </script>
+    <script src="/js/ace/ace.js?template" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/gone-editor.js?template" type="text/javascript" charset="utf-8"></script>
 </body>
 
 </html>
