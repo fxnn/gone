@@ -1,14 +1,18 @@
 # gone
 
-Gone is a wiki written in [Go](http://golang.org). It's
+Gone is a wiki engine written in [Go](http://golang.org). It's
 
 * KISS,
 * Convention over Configuration and
 * designed with Developers and Admins in mind.
 
-It displays Markdown (as HTML), HTML and Plaintext straight from the filesystem.
-It allows you to edit just anything that has MIME type `text/*`.
-It uses the filesystem's access control as far as possible.
+With Gone, you can
+
+* display Markdown, HTML and Plaintext straight from the filesystem.
+* edit just any file that's made of text.
+* have all this without setup, no database needed, not even the tinyest configuration.
+
+So go get it!
 
 [![Build Status](https://travis-ci.org/fxnn/gone.svg?branch=master)](https://travis-ci.org/fxnn/gone)
 [![GoDoc](https://godoc.org/github.com/fxnn/gone?status.svg)](https://godoc.org/github.com/fxnn/gone)
@@ -16,6 +20,9 @@ It uses the filesystem's access control as far as possible.
 
 
 ## Usage
+
+> *NOTE: This assumes that you have [Go installed](https://golang.org/doc/install).
+> Binary distributions will follow.*
 
 Install the application and start it.
 
@@ -25,13 +32,19 @@ $ gone
 ```
 
 The current working directory will now be served on port `8080`.
-For example, the file `test.md` in that working directory is now accessible as `http://localhost:8080/test.md`.
 
-Append `?edit` to the URL to edit the content.
-Append `?create` to the URL to create a non-existant file.
-
-While no one will be able to access the outside of the working directory (e.g. by using `/../breakout`),
-it _is_ possible to access symlinks to anywhere in the file system.
+* *Display content.*
+  The file `test.md` in that working directory is now accessible as `http://localhost:8080/test.md`.
+  It's a [Markdown](https://en.wikipedia.org/wiki/Markdown) file, but Gone delivers a rendered webpage.
+  Other files (text, HTML, PDF, ...) would simply be rendered as they are.
+* *Editing just anything that's made of text.*
+  In your browser, append `?edit` in the address bar.
+  Gone now sends you a text editor, allowing you to edit your file.
+  Your file doesn't exist yet? Use `?create` instead.
+* *Customize everything.*
+  Change how Gone looks.
+  Call `gone export-templates`, and you will get the HTML, CSS and JavaScript behind Gone's frontend.
+  Modify it as you like.
 
 See `gone -help` for usage information and configuration options.
 
@@ -102,12 +115,10 @@ See `gone -help` for more information.
 
 ## Future
 
-Some day, Gone might be able to
-* use external programs to render files into HTML, which would allow you to display manpages or syntax-highlighted code right in the web browser.
-* support OpenID authentication.
-* respect each files / directories group attribute for access control, in combination with a `htgroup` file.
-* incorporate Git as version control system.
-* include a fulltext search.
+Some day, Gone might be
+* extensible. Plugin in version control, renderers, compilers or anything you like. #29
+* granting file access on a group level, using a `htgroup` file.
+* searchable in full text.
 
 
 ## Development
@@ -125,6 +136,7 @@ If you build with go-1.5, enable the [GO15VENDOREXPERIMENT](https://golang.org/s
 Gone imports code from following projects:
 
 * [abbot/go-http-auth](https://github.com/abbot/go-http-auth) for HTTP basic authentication
+* [fsnotify/fsnotify](https://github.com/fsnotify/fsnotify) for watching files
 * [gorilla](https://github.com/gorilla), a great web toolkit for Go, used for sessions and cookies
 * [russross/blackfriday](https://github.com/russross/blackfriday), a well-made markdown processor for Go
 * [shurcooL/sanitized_anchor_name](https://github.com/shurcooL/sanitized_anchor_name) for making strings URL-compatible
@@ -137,8 +149,12 @@ Also, the following commands are used to build gone:
 * [pierre/gotestcover](https://github.com/pierrre/gotestcover) to run tests with coverage analysis on multiple packages
 * [mjibson/esc](https://github.com/mjibson/esc) for embedding files into the binary
 
+Gone's frontend wouldn't be anything without
 
-### Architecture
+* [ajaxorg/ace](https://github.com/ajaxorg/ace), a great in-browser editor
+
+
+## Architecture
 
                    +------+
                    | main |
