@@ -3,7 +3,6 @@ package templates
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 )
 
@@ -21,11 +20,12 @@ func NewEditorRenderer() *EditorRenderer {
 	}
 }
 
-func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string, edit bool) error {
+func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string,
+	mimeType string, edit bool) error {
 	var data = make(map[string]interface{})
 	data["path"] = url.Path
 	data["content"] = content
-	data["contenttype"] = r.contentTypeForString(content)
+	data["contenttype"] = mimeType
 	if edit {
 		data["edit"] = "edit"
 	}
@@ -35,8 +35,4 @@ func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string, e
 	}
 
 	return nil
-}
-
-func (r EditorRenderer) contentTypeForString(s string) string {
-	return http.DetectContentType([]byte(s))
 }

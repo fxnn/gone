@@ -131,7 +131,8 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	if err := e.assertEditableTextFile(request); err != nil {
+	mimeType := e.store.MimeTypeForRequest(request)
+	if err := e.assertEditableTextFile(request, mimeType); err != nil {
 		log.Printf("%s %s: no editable text file: %s", request.Method, request.URL, err)
 		failer.ServeUnsupportedMediaType(writer, request)
 		return
@@ -154,7 +155,8 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	err := e.renderer.Render(writer, request.URL, content, router.Is(router.ModeEdit, request))
+	err := e.renderer.Render(writer, request.URL, content, mimeType,
+		router.Is(router.ModeEdit, request))
 	if err != nil {
 		log.Printf("%s %s: %s", request.Method, request.URL, err)
 		failer.ServeInternalServerError(writer, request)
@@ -164,7 +166,7 @@ func (e *Editor) serveEditUI(writer http.ResponseWriter, request *http.Request) 
 	log.Printf("%s %s: served from template", request.Method, request.URL)
 }
 
-func (e *Editor) assertEditableTextFile(request *http.Request) error {
+func (e *Editor) assertEditableTextFile(request *http.Request, mimeType string) error {
 	bytes := e.store.FileSizeForRequest(request)
 	if err := e.store.Err(); err != nil && store.IsPathNotFoundError(err) {
 		// HINT: doesn't exist; that's pretty editable
@@ -177,8 +179,7 @@ func (e *Editor) assertEditableTextFile(request *http.Request) error {
 			bytes, maxEditableBytes)
 	}
 
-	mimeType := e.store.MimeTypeForRequest(request)
-	if e.store.Err() == nil && e.isKnownEditableMimeType(mimeType) {
+	if e.isKnownEditableMimeType(mimeType) {
 		return nil
 	}
 
@@ -188,6 +189,7 @@ func (e *Editor) assertEditableTextFile(request *http.Request) error {
 var knownEditableMimeTypePrefixes = []string{
 	"application/xhtml+xml",
 	"application/xml",
+	"application/javascript",
 	"application/x-javascript",
 	"application/x-latex",
 	"application/x-sh",
