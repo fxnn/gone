@@ -3,6 +3,7 @@ package templates
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 )
 
@@ -24,6 +25,7 @@ func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string, e
 	var data = make(map[string]interface{})
 	data["path"] = url.Path
 	data["content"] = content
+	data["mediatype"] = r.mediaTypeForString(content)
 	if edit {
 		data["edit"] = "edit"
 	}
@@ -33,4 +35,8 @@ func (r EditorRenderer) Render(writer io.Writer, url *url.URL, content string, e
 	}
 
 	return nil
+}
+
+func (r EditorRenderer) mediaTypeForString(s string) string {
+	return http.DetectContentType([]byte(s))
 }
