@@ -5,8 +5,14 @@ var GoneEditor = new(function() {
     var _elements = {
         content: null,
         editor: null,
+		contentType: null,
         form: null
     };
+	var _modesPerContentType = {
+		"javascript": "javascript",
+		"text/html": "html",
+		"text/css": "css"
+	};
 
     this.init = function() {
 		_initACE();
@@ -15,6 +21,7 @@ var GoneEditor = new(function() {
     
     var _findElements = function() {
         _elements.content = document.getElementById('frm-edit__inp-content');
+		_elements.contentType = document.getElementById('frm-edit__inp-contenttype');
         _elements.form = document.getElementById('frm-edit'); 
     };
 
@@ -28,9 +35,24 @@ var GoneEditor = new(function() {
     	_elements.editor = ace.edit("frm-edit__cnt-editor");
     	_elements.editor.setTheme("ace/theme/chrome");
     	_elements.editor.getSession().setValue(_elements.content.value);
+		_adjustEditorMode();
     	
     	_elements.form.addEventListener('submit', _copyEditorContentToTextarea);
     };
+
+	var _adjustEditorMode = function() {
+		for (var contentType in _modesPerContentType) {
+			if (_modesPerContentType.hasOwnProperty(contentType) &&
+					_contentTypeContains(contentType)) {
+				_elements.editor.getSession().setMode('ace/mode/' +
+						_modesPerContentType[contentType]);
+			}
+		}
+	};
+
+	var _contentTypeContains = function(s) {
+		return _elements.contentType.value.indexOf(s) >= 0;
+	};
 
 	var _initUI = function() {
 		_findElements();

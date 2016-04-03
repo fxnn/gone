@@ -35,8 +35,11 @@
 <body>
 	<form id="frm-edit" method="POST" action="{{.path}}">
 		<input type="hidden" name="edit" value="edit" />
+		<input id="frm-edit__inp-contenttype" type="hidden" name="contenttype"
+				value="{{.contenttype}}" />
 
-		<textarea id="frm-edit__inp-content" name="content" rows="20">{{.content}}</textarea>
+		<textarea id="frm-edit__inp-content" name="content" rows="20"
+				>{{.content}}</textarea>
 		<div id="frm-edit__cnt-editor" class="ace-editor"></div>
 
 		<div id="frm-edit__cnt-controls" class="controls">
