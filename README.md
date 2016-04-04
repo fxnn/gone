@@ -19,15 +19,23 @@ So go get it!
 [![Coverage Status](https://coveralls.io/repos/fxnn/gone/badge.svg?branch=master&service=github)](https://coveralls.io/github/fxnn/gone?branch=master)
 
 
-## Usage
+## Installation
 
-> *NOTE: This assumes that you have [Go installed](https://golang.org/doc/install).
-> Binary distributions will follow.*
-
-Install the application and start it.
+Assure that you have [Go installed](https://golang.org/doc/install).
+Now, install the application via `go get`.
 
 ```console
 $ go get github.com/fxnn/gone
+```
+
+Binary releases will follow.
+
+
+## Usage
+
+You can simply start Gone by calling its binary.
+
+```console
 $ gone
 ```
 
