@@ -39,6 +39,10 @@ func (s *MockStore) GivenNotExists() {
 	s.exists = false
 }
 
+func (s *MockStore) FileForRequestExists(request *http.Request) bool {
+	return s.exists
+}
+
 func (s *MockStore) GivenReadAccess() {
 	s.readAccess = true
 }

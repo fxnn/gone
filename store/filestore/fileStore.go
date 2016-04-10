@@ -57,6 +57,11 @@ func (f *fileStore) FileSizeForRequest(request *http.Request) int64 {
 	return p.FileInfo().Size()
 }
 
+// FileForRequestExists returns true iff the underlying file does exist.
+func (f *fileStore) FileForRequestExists(request *http.Request) bool {
+	return f.pathFromRequest(request).IsExists()
+}
+
 // ReadString returns the requested content as string.
 // A caller must always check the Err() method.
 func (f *fileStore) ReadString(request *http.Request) string {

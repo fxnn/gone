@@ -7,6 +7,7 @@ import (
 	"github.com/fxnn/gone/http/editor"
 	"github.com/fxnn/gone/http/router"
 	"github.com/fxnn/gone/http/templates"
+	"github.com/fxnn/gone/http/uploader"
 	"github.com/fxnn/gone/http/viewer"
 	"github.com/fxnn/gone/log"
 	"github.com/fxnn/gone/store"
@@ -24,7 +25,8 @@ func ListenAndServe(
 	var templateDeliverer = templates.NewTemplateDeliverer(loader)
 	var viewer = viewer.New(loader, store)
 	var editor = editor.New(loader, store)
-	var router = router.New(viewer, editor, templateDeliverer, auth.LoginHandler())
+	var uploader = uploader.New(loader, store)
+	var router = router.New(viewer, editor, uploader, templateDeliverer, auth.LoginHandler())
 
 	var handlerChain = RequestLogger(
 		context.ClearHandler(

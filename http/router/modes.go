@@ -16,7 +16,18 @@ const (
 	ModeLogin         = "login"
 	ModeDelete        = "delete"
 	ModeTemplate      = "template"
+	ModeUpload        = "upload"
 )
+
+var allModes = []Mode{
+	ModeView,
+	ModeEdit,
+	ModeCreate,
+	ModeLogin,
+	ModeDelete,
+	ModeTemplate,
+	ModeUpload,
+}
 
 // To returns a URL that points to the same resource, but lets the
 // wiki open it in given mode.
@@ -29,14 +40,16 @@ func To(m Mode, u *url.URL) *url.URL {
 // Is returns true, iff the given request specifies to open a resource in
 // the given mode.
 func Is(m Mode, r *http.Request) bool {
-	var ok = false
-
-	switch m {
-	case ModeView:
-		ok = !Is(ModeEdit, r) && !Is(ModeCreate, r) && !Is(ModeDelete, r)
-	case ModeEdit, ModeDelete, ModeCreate, ModeLogin, ModeTemplate:
-		_, ok = r.Form[string(m)]
+	if m != ModeView {
+		_, ok := r.Form[string(m)]
+		return ok
 	}
 
-	return ok
+	for _, mode := range allModes {
+		if mode != ModeView && Is(mode, r) {
+			return false
+		}
+	}
+
+	return true
 }

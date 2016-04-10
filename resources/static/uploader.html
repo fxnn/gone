@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<title>{{.path}}</title>
+
+	<style type="text/css">
+		/* <![CDATA[ */
+		div.ace-editor { 
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 40px;
+			left: 0;
+			z-index:50;
+		}
+		.controls {
+			position: absolute;
+			height: 40px;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 100;
+			background-color: #eee;
+		}
+		.controls .row {
+		    margin: 8px;
+		}
+		/* ]]> */
+	</style>
+</head>
+
+<body>
+	<form method="POST" action="{{.path}}">
+		<input type="hidden" name="upload" value="upload" />
+		<input type="submit" name="save" value="Save" />
+		{{if .targetAlreadyExists}}
+			<a href="{{.path}}?delete">Delete</a>
+		{{end}}
+	</form>
+</body>
+
+</html>

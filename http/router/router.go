@@ -10,8 +10,9 @@ import (
 // Router encapsulates http.Handler instances for all relevant views and
 // invokes the right one for each request.
 type Router struct {
-	editor            http.Handler
 	viewer            http.Handler
+	editor            http.Handler
+	uploader          http.Handler
 	templateDeliverer http.Handler
 	authenticator     http.Handler
 }
@@ -20,10 +21,11 @@ type Router struct {
 func New(
 	viewer http.Handler,
 	editor http.Handler,
+	uploader http.Handler,
 	templateDeliverer http.Handler,
 	authenticator http.Handler,
 ) *Router {
-	return &Router{editor, viewer, templateDeliverer, authenticator}
+	return &Router{viewer, editor, uploader, templateDeliverer, authenticator}
 }
 
 func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -37,7 +39,11 @@ func (r Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		r.authenticator.ServeHTTP(writer, request)
 	} else if Is(ModeEdit, request) || Is(ModeCreate, request) || Is(ModeDelete, request) {
 		r.editor.ServeHTTP(writer, request)
-	} else {
+	} else if Is(ModeUpload, request) {
+		r.uploader.ServeHTTP(writer, request)
+	} else if Is(ModeView, request) {
 		r.viewer.ServeHTTP(writer, request)
+	} else {
+		log.Fatalf("%s %s: mode not implemented", request.Method, request.URL)
 	}
 }

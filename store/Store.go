@@ -24,6 +24,7 @@ type Store interface {
 
 	Delete(request *http.Request)
 
+	FileForRequestExists(request *http.Request) bool
 	FileSizeForRequest(request *http.Request) int64
 	MimeTypeForRequest(request *http.Request) string
 

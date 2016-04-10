@@ -2480,6 +2480,23 @@ sB6dtYH3p7o5ut8k+rOrsfHoTwAAAP//xfVaGrAIAAA=
 `,
 	},
 
+	"/uploader.html": {
+		local:   "static/uploader.html",
+		size:    880,
+		modtime: 1460306848,
+		compressed: `
+H4sIAAAJbogA/3xS34/SQBB+Lgn/w1x9u4Qu5DSRumAQSDQ5PeLVqLncw9Id6MZtt9lOodjwv9tfcBiJ
+fWhnpvvN9803y28WD/Pg52oJEcUaVt8+3H+agztg7PvdnLFFsIAfH4PP9zDyhhBYkWSKlEmEZmz5xe33
+3Igo9Rnb7/fe/s4zdsuCr6yom41qdBcO6ALqSZLutN/r93hDWsQ6ySZXOo3G43Hb4HQchawih5MijdOy
+9FJB0fHIWVuoDzk8o4NGoEOKE5ewIBZmWd3Acdgt8Jun+WIWzJ7gltUlqXaeCHGAUpGxUEJddFLTivVB
+rDOjc8J3TZ1M6sOwja3aRnTO1obIxD68HqZFW9G4efn9e6ASiYX/ps2P9csLTULW6AzK/5JG2DK9tD6R
+Da8w/S3rxAuj4UmoCH9trckTOQiNNtaHV4h4TZVnzb6VBtUTC7tVlba3nYhjZ+jz87S1krPG+MpozrpF
+VeHayEOzso2xMcRIkZETd/XwGLggwnrciXveY7slrpI0p26BkZISExcSEVdZnmojpAs7ofOLlP2Ly/J1
+rOiEy8QOz6jHJmkxZak24FE1G9JM20r2YVmojLJjM5/DBUQWNxca30vUSOhOF82XM9E1wkQ2IM7qURsb
+uuEbR6pbXIV/AgAA//9tyHpscAMAAA==
+`,
+	},
+
 	"/viewer.html": {
 		local:   "static/viewer.html",
 		size:    533,

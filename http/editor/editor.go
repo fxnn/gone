@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	maxEditableBytes = 10 * 1024 * 1024 // 10 MiB of data
+	kBytes           = 1024
+	mBytes           = 1024 * kBytes
+	maxEditableBytes = 10 * mBytes
 )
 
 // The Editor is a HTTP Handler that serves the editor UI.

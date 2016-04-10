@@ -2,6 +2,7 @@ package resources
 var AllFileNames = []string{
 	"/editor.html",
 	"/viewer.html",
+	"/uploader.html",
 	"/js/ace/theme-chrome.js",
 	"/js/ace/mode-javascript.js",
 	"/js/ace/LICENSE",
