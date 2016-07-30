@@ -2,6 +2,7 @@ package viewer
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/fxnn/gone/http/failer"
 	"github.com/fxnn/gone/http/templates"
@@ -40,22 +41,53 @@ func (v *Viewer) serveNonGET(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (v *Viewer) serveGET(writer http.ResponseWriter, request *http.Request) {
+	if v.isNotModified(writer, request) {
+		return
+	}
+
 	var formatter = v.formatterForRequest(request)
 	var readCloser = v.store.OpenReader(request)
 	if err := v.store.Err(); err != nil {
-		log.Printf("%s %s: %s", request.Method, request.URL, err)
-
-		if store.IsPathNotFoundError(err) {
-			failer.ServeNotFound(writer, request)
-			return
-		}
-
-		failer.ServeInternalServerError(writer, request)
+		v.serveError(writer, request, err)
 		return
 	}
 
 	defer readCloser.Close()
 	formatter.serveFromReader(readCloser, writer, request)
+}
+
+// isNotModified handles the complete Last-Modified / If-Modified-Since logic
+// for HTTP caching.
+func (v *Viewer) isNotModified(writer http.ResponseWriter, request *http.Request) bool {
+	var modTime = v.store.ModTimeForRequest(request)
+
+	if err := v.store.Err(); err == nil && !modTime.IsZero() {
+		if ifModifiedSince, err := time.Parse(http.TimeFormat, request.Header.Get("If-Modified-Since")); err == nil {
+			if modTime.Before(ifModifiedSince.Add(1*time.Second)) {
+				writer.WriteHeader(http.StatusNotModified)
+				return true
+			}
+		}
+
+		writer.Header().Set("Last-Modified", modTime.UTC().Format(http.TimeFormat))
+	}
+
+	return false
+}
+
+func (v *Viewer) serveError(writer http.ResponseWriter, request *http.Request, err error) {
+	v.log(request, err)
+
+	if store.IsPathNotFoundError(err) {
+		failer.ServeNotFound(writer, request)
+		return
+	}
+
+	failer.ServeInternalServerError(writer, request)
+}
+
+func (v *Viewer) log(request *http.Request, err error) {
+	log.Printf("%s %s: %s", request.Method, request.URL, err)
 }
 
 func (v *Viewer) formatterForRequest(request *http.Request) formatter {

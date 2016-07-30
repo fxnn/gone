@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/fxnn/gone/store"
 )
@@ -95,6 +96,13 @@ func (s *MockStore) FileSizeForRequest(request *http.Request) int64 {
 		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
 	}
 	return 0
+}
+
+func (s *MockStore) ModTimeForRequest(request *http.Request) time.Time {
+	if !s.exists {
+		s.err = store.NewPathNotFoundError("mocked PathNotFoundError")
+	}
+	return time.Now()
 }
 
 func (s *MockStore) GivenMimeType(mimeType string) {

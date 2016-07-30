@@ -3,6 +3,7 @@ package store
 import (
 	"io"
 	"net/http"
+	"time"
 )
 
 // Store allows to read and write wiki contents and incorporates access
@@ -26,6 +27,7 @@ type Store interface {
 
 	FileSizeForRequest(request *http.Request) int64
 	MimeTypeForRequest(request *http.Request) string
+	ModTimeForRequest(request *http.Request) time.Time
 
 	// Err() clears and returns the error value.
 	// It allows for error checking after one or more operations.

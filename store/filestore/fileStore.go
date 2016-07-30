@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
@@ -55,6 +56,18 @@ func (f *fileStore) FileSizeForRequest(request *http.Request) int64 {
 	}
 
 	return p.FileInfo().Size()
+}
+
+// ModTimeForRequest returns the modification time of the underlying file, or
+// sets the Err() value.
+func (f *fileStore) ModTimeForRequest(request *http.Request) time.Time {
+	p := f.pathFromRequest(request).Stat()
+	if p.HasErr() {
+		f.setErr(p.Err())
+		return time.Time{}
+	}
+
+	return p.FileInfo().ModTime()
 }
 
 // ReadString returns the requested content as string.
