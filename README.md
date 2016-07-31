@@ -106,6 +106,20 @@ the above requirements.
 This mechanism is transparent to the user, no redirect will happen.
 
 
+## Links
+
+When you create files with the extension `url` and put a URL inside it, Gone will serve
+it as a temporary `302` redirect.
+
+Example:
+
+```console
+$ echo "https://github.com" > github.url
+```
+
+A call to `http://localhost:8080/github` will get you redirected to GitHub now.
+
+
 ## Templates
 
 Gone uses some Go templates for its UI.
