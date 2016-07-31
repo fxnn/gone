@@ -20,6 +20,7 @@ type formatters struct {
 func newFormatters(l templates.Loader) formatters {
 	var formatterByMimeType = map[string]formatter{
 		store.MarkdownMimeType: newMarkdownFormatter(l),
+		store.UrlMimeType: newRedirectFormatter(l),
 	}
 	return formatters{formatterByMimeType}
 }

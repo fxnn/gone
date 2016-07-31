@@ -9,6 +9,7 @@ import (
 const (
 	FallbackMimeType = "application/octet-stream"
 	MarkdownMimeType = "text/markdown"
+	UrlMimeType = "text/url"
 )
 
 func init() {
@@ -22,10 +23,16 @@ func init() {
 	registerMarkdownExtension("mdtxt")
 	registerMarkdownExtension("mdtext")
 	registerMarkdownExtension("text")
+
+	registerExtension("url", UrlMimeType)
 }
 
 func registerMarkdownExtension(ext string) {
-	if err := mime.AddExtensionType("."+ext, MarkdownMimeType); err != nil {
-		log.Printf("error adding %s as markdown extension: %s", ext, err)
+	registerExtension(ext, MarkdownMimeType)
+}
+
+func registerExtension(ext string, mimeType string) {
+	if err := mime.AddExtensionType("."+ext, mimeType); err != nil {
+		log.Printf("error adding %s as extension for Mime type %s: %s", ext, mimeType, err)
 	}
 }
