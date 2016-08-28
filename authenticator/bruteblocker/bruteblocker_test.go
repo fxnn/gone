@@ -57,7 +57,7 @@ func TestDelayPanicsAfterShutdown(t *testing.T) {
 
 }
 
-func TestshutdownPanicsAfterShutdown(t *testing.T) {
+func TestShutdownPanicsAfterShutdown(t *testing.T) {
 
 	var sut = newSut()
 	sut.ShutDown()

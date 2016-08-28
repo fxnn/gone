@@ -99,12 +99,12 @@ func (b *BruteBlocker) CleanUp() {
 // should also delay after an successful authentication.
 // This way, the attacker needs to await the full delay in order to know whether
 // his authentication attempt succeeded or not.
-func (b *BruteBlocker) Delay(userId string, sourceAddr string, successful bool) time.Duration {
+func (b *BruteBlocker) Delay(userID string, sourceAddr string, successful bool) time.Duration {
 	var response = make(chan time.Duration)
 	// NOTE that delay call must happen as request, just as all accesses to
 	// internal data structures
 	b.requests <- func() {
-		response <- b.delay(userId, sourceAddr, successful)
+		response <- b.delay(userID, sourceAddr, successful)
 	}
 	return <-response
 }
@@ -135,8 +135,8 @@ func (b *BruteBlocker) cleanUpEachTick() {
 // delay calculates the delay for the given login attempt and updates internal
 // data structures.
 // It MUST be called as request.
-func (b *BruteBlocker) delay(userId string, sourceAddr string, successful bool) time.Duration {
-	var userDelay = b.delayCriterion("user="+userId, b.userDelayStep, successful)
+func (b *BruteBlocker) delay(userID string, sourceAddr string, successful bool) time.Duration {
+	var userDelay = b.delayCriterion("user="+userID, b.userDelayStep, successful)
 	var addrDelay = b.delayCriterion("addr="+sourceAddr, b.addrDelayStep, successful)
 	var globalDelay = b.delayCriterion("global", b.globalDelayStep, successful)
 
