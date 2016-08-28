@@ -59,6 +59,10 @@ See `gone -help` for usage information and configuration options.
 
 ## Access Control
 
+_**NOTE,** that these features **only** apply to **UNIX** based OSs.
+Especially the Windows implementation currently does not support most of the
+access control features._
+
 Gone uses the file system's access control features.
 Of course, the Gone process can't read or write files it doesn't have a
 permission to.
