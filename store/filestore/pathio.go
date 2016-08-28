@@ -63,23 +63,22 @@ func (i *pathIO) assertPathValidForWriteAccess(p gopath.GoPath) {
 	if i.hasErr() {
 		return
 	}
-	var s = p.Stat()
-	if s.HasErr() {
-		i.setErr(s.Err())
+	if p.HasErr() {
+		i.setErr(p.Err())
 		return
 	}
 
-	if s.IsExists() {
-		if !s.IsRegular() || !isPathWriteable(s) {
+	if p.IsExists() {
+		if !p.IsRegular() || !isPathWriteable(p) {
 			i.setErr(store.NewAccessDeniedError(fmt.Sprintf(
 				"path '%s' with mode %s denotes no regular file or no writeable directory",
-				s.Path(), s.FileMode())))
+				p.Path(), p.FileMode())))
 		}
 	} else {
-		var d = s.Dir()
+		var d = p.Dir()
 		if !isPathWriteable(d) {
 			i.setErr(store.NewAccessDeniedError(
-				"parent directory of '" + s.Path() + "' is not writeable"))
+				"parent directory of '" + p.Path() + "' is not writeable"))
 		}
 	}
 }

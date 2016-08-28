@@ -33,6 +33,7 @@ func TestCleanUp(t *testing.T) {
 	var sut = newSutDroppingAfter(0)
 
 	sut.Delay("user", "ip", false)
+	time.Sleep(100 * time.Millisecond)
 	sut.CleanUp()
 
 	if delay := sut.Delay("user", "ip", false); delay != 0 {

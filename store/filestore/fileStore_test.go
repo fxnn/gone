@@ -19,6 +19,8 @@ func TestReadNonExistantFileReturnsPathNotFoundError(t *testing.T) {
 }
 
 func TestReadHiddenFileReturnsPathNotFoundError(t *testing.T) {
+	skipOnWindows(t)
+
 	tempFile := createPrefixedTempFileInCurrentwd(t, 0777, ".")
 	defer removeTempFileFromCurrentwd(t, tempFile)
 
@@ -51,6 +53,8 @@ func TestCreateFileInHiddenDirReturnsPathNotFoundError(t *testing.T) {
 
 // https://github.com/fxnn/gone/issues/15
 func TestReadInHiddenDirReturnsPathNotFoundError(t *testing.T) {
+	skipOnWindows(t)
+
 	tempDir := createPrefixedTempWdInCurrentwd(t, 0777, ".")
 	defer removeTempWdFromCurrentwd(t, tempDir)
 

@@ -14,12 +14,16 @@ func isPathWriteable(p gopath.GoPath) bool {
 }
 
 func isFileWriteable(p gopath.GoPath) bool {
-	var closer, err = os.OpenFile(p.Path(), os.O_WRONLY, 0)
-	if closer != nil {
-		closer.Close()
+	if p.IsExists() {
+		var closer, err = os.OpenFile(p.Path(), os.O_WRONLY, 0)
+		if closer != nil {
+			closer.Close()
+		}
+
+		return err == nil
 	}
 
-	return err == nil
+	return isDirWriteable(p.Dir())
 }
 
 func isDirWriteable(p gopath.GoPath) bool {

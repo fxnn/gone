@@ -6,12 +6,24 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"testing"
 
 	"github.com/fxnn/gone/authenticator"
 	"github.com/fxnn/gone/store"
 	"github.com/fxnn/gopath"
+	"path/filepath"
 )
+
+func skipOnWindows(t *testing.T) {
+	skipOnOs("windows", t)
+}
+
+func skipOnOs(os string, t *testing.T) {
+	if runtime.GOOS == os {
+		t.Skipf("test skipped on OS %s", os)
+	}
+}
 
 func sutNotAuthenticated(t *testing.T) store.Store {
 	return New(getwdPath(t), authenticator.NewNeverAuthenticated())
@@ -64,7 +76,7 @@ func createPrefixedTempDirInCurrentwd(t *testing.T, mode os.FileMode, prefix str
 	if err != nil {
 		t.Fatalf("couldnt chmod tempdir %s: %s", tmpdir, err)
 	}
-	return path.Base(tmpdir)
+	return path.Base(filepath.ToSlash(tmpdir))
 }
 
 func createTempFileInCurrentwd(t *testing.T, mode os.FileMode) string {
@@ -79,7 +91,7 @@ func createPrefixedTempFileInCurrentwd(t *testing.T, mode os.FileMode, prefix st
 	}
 	info, err := tmpfile.Stat()
 	if err != nil {
-		t.Fatalf("couldnt stat tmpfile %s: %s", tmpfile, err)
+		t.Fatalf("couldnt stat tmpfile %v: %s", tmpfile, err)
 	}
 	err = tmpfile.Chmod(mode)
 	if err != nil {

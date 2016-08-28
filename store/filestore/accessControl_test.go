@@ -23,6 +23,8 @@ func TestCreateFileProceedsWithSupplementaryPermissions(t *testing.T) {
 
 // https://github.com/fxnn/gone/issues/7 No.2 negative write
 func TestCreateFileDeniesWhenWorldWritePermissionIsMissing(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempDirInCurrentwd(t, 0771) // World execute flag
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
@@ -37,6 +39,8 @@ func TestCreateFileDeniesWhenWorldWritePermissionIsMissing(t *testing.T) {
 
 // https://github.com/fxnn/gone/issues/9
 func TestCreateFileDeniesWhenOwnerWritePermissionIsMissing(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempDirInCurrentwd(t, 0555) // No write at all
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
@@ -51,6 +55,8 @@ func TestCreateFileDeniesWhenOwnerWritePermissionIsMissing(t *testing.T) {
 
 // https://github.com/fxnn/gone/issues/7 No.2 negative execute
 func TestCreateFileDeniesWhenWorldExecutePermissionIsMissing(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempDirInCurrentwd(t, 0772) // World write flag
 	defer removeTempDirFromCurrentwd(t, tmpdir)
 
@@ -65,6 +71,8 @@ func TestCreateFileDeniesWhenWorldExecutePermissionIsMissing(t *testing.T) {
 
 // https://github.com/fxnn/gone/issues/7 No.3 positive
 func TestReadExistingFileInsideDirectoryProceedsWithSupplementaryPermissions(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0771) // world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -82,6 +90,8 @@ func TestReadExistingFileInsideDirectoryProceedsWithSupplementaryPermissions(t *
 
 // https://github.com/fxnn/gone/issues/7 No.3 negative (execute)
 func TestReadExistingFileInsideDirectoryDeniesOnMissingExecutePermission(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0770) // missing world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -99,6 +109,8 @@ func TestReadExistingFileInsideDirectoryDeniesOnMissingExecutePermission(t *test
 
 // https://github.com/fxnn/gone/issues/7 No.3 negative (read)
 func TestReadExistingFileInsideDirectoryDeniesOnMissingReadPermission(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0771) // world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -116,6 +128,8 @@ func TestReadExistingFileInsideDirectoryDeniesOnMissingReadPermission(t *testing
 
 // https://github.com/fxnn/gone/issues/7 No.4 positive
 func TestWriteExistingFileInsideDirectoryProceedsWithSupplementaryPermissions(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0771) // world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -133,6 +147,8 @@ func TestWriteExistingFileInsideDirectoryProceedsWithSupplementaryPermissions(t 
 
 // https://github.com/fxnn/gone/issues/7 No.4 negative (execute)
 func TestWriteExistingFileInsideDirectoryDeniesOnMissingExecutePermission(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0770) // missing world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -150,6 +166,8 @@ func TestWriteExistingFileInsideDirectoryDeniesOnMissingExecutePermission(t *tes
 
 // https://github.com/fxnn/gone/issues/7 No.4 negative (write)
 func TestWriteExistingFileInsideDirectoryDeniesOnMissingWritePermission(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpdir := createTempWdInCurrentwd(t, 0771) // world execute flag
 	defer removeTempWdFromCurrentwd(t, tmpdir)
 
@@ -166,6 +184,8 @@ func TestWriteExistingFileInsideDirectoryDeniesOnMissingWritePermission(t *testi
 }
 
 func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
+	skipOnWindows(t)
+
 	tmpfile := createTempFileInCurrentwd(t, 0770)
 	defer removeTempFileFromCurrentwd(t, tmpfile)
 
@@ -179,6 +199,8 @@ func TestOpenReaderProceedsWhenAuthenticated(t *testing.T) {
 }
 
 func TestAccessToParentDirDenied(t *testing.T) {
+	skipOnWindows(t)
+
 	tempFile := createTempFileInCurrentwd(t, 0777)
 	defer removeTempFileFromCurrentwd(t, tempFile)
 
@@ -197,6 +219,8 @@ func TestAccessToParentDirDenied(t *testing.T) {
 }
 
 func TestAccessToSymlinkToParentDirAllowed(t *testing.T) {
+	skipOnWindows(t)
+
 	tempFile := createTempFileInCurrentwd(t, 0777)
 	defer removeTempFileFromCurrentwd(t, tempFile)
 
