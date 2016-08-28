@@ -61,3 +61,17 @@ func (s *errStore) syncedErrs(p gopath.GoPath) gopath.GoPath {
 	}
 	return p
 }
+
+func (s *errStore) prependErr(prefix string) {
+	if s.err != nil {
+		var msg = fmt.Sprintf("%s: %s", prefix, s.err.Error())
+		switch {
+		case store.IsPathNotFoundError(s.err):
+			s.err = store.NewPathNotFoundError(msg)
+		case store.IsAccessDeniedError(s.err):
+			s.err = store.NewAccessDeniedError(msg)
+		default:
+			s.err = fmt.Errorf(msg)
+		}
+	}
+}

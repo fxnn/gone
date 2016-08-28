@@ -1,6 +1,7 @@
 package gopath
 
 import "os"
+import "fmt"
 
 // GoPath is an immutable object, representing a computational stage in
 // path processing.
@@ -27,11 +28,13 @@ func FromPath(p string) GoPath {
 	return GoPath{path: p}
 }
 
-// FromError constructs an errorneous GoPath instance.
+// FromErr constructs an errorneous GoPath instance.
 func FromErr(err error) GoPath {
 	return GoPath{err: err}
 }
 
+// ClearErr returns a GoPath instance with the same fields as this instance,
+// except for the err field being nil.
 func (g GoPath) ClearErr() GoPath {
 	return g.withErr(nil)
 }
@@ -44,6 +47,17 @@ func (g GoPath) ClearErr() GoPath {
 // Note, that this does not check the file size, contents or anything like this.
 func (g GoPath) IsEmpty() bool {
 	return g.path == ""
+}
+
+// PrependErr modifies this GoPath by prefixing its error text with the given
+// string, followed by a colon and a space.
+// When this GoPath doesn't have an err set, it is returned unchanged.
+func (g GoPath) PrependErr(prefix string) GoPath {
+	if g.HasErr() {
+		return g.withErr(fmt.Errorf("%s: %s", prefix, g.Err().Error()))
+	}
+
+	return g
 }
 
 func (g GoPath) withPath(p string) GoPath {
@@ -60,6 +74,7 @@ func (g GoPath) withFileInfo(fileInfo os.FileInfo) GoPath {
 	return GoPath{g.path, g.err, fileInfo}
 }
 
+// Transformer is a func that transforms one GoPath instance into another.
 type Transformer func(GoPath) GoPath
 
 // Do executes the transformer on this GoPath.

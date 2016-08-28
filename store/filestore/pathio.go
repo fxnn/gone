@@ -26,11 +26,13 @@ func newPathIO(contentRoot gopath.GoPath, s *errStore) *pathIO {
 func (i *pathIO) openReaderAtPath(p gopath.GoPath) (reader io.ReadCloser) {
 	i.assertPathValidForAnyAccess(p)
 	if i.hasErr() {
+		i.prependErr(fmt.Sprintf("cannot open reader for '%s'", p))
 		return nil
 	}
 
 	reader, err := os.Open(p.Path())
 	i.setErr(err)
+	i.prependErr(fmt.Sprintf("couldn't open reader for '%s'", p))
 
 	return
 }
@@ -39,19 +41,20 @@ func (i *pathIO) openWriterAtPath(p gopath.GoPath) (writer io.WriteCloser) {
 	i.assertPathValidForAnyAccess(p)
 	i.assertPathValidForWriteAccess(p)
 	if i.hasErr() {
+		i.prependErr(fmt.Sprintf("cannot open writer for '%s'", p))
 		return nil
 	}
 
 	writer, err := os.Create(p.Path())
-	if err != nil {
-		i.setErr(fmt.Errorf("open writer: %s", err))
-	}
+	i.setErr(err)
+	i.prependErr(fmt.Sprintf("couldn't open writer for '%s'", p))
 
 	return
 }
 
 func (i *pathIO) assertPathExists(p gopath.GoPath) {
 	i.syncedErrs(p.AssertExists())
+	i.prependErr(fmt.Sprintf("required path %s does not exist", p))
 }
 
 // assertPathValidForWriteAccess sets the error flag when the path may not be
@@ -60,21 +63,23 @@ func (i *pathIO) assertPathValidForWriteAccess(p gopath.GoPath) {
 	if i.hasErr() {
 		return
 	}
-	if p.HasErr() {
-		i.setErr(p.Err())
+	var s = p.Stat()
+	if s.HasErr() {
+		i.setErr(s.Err())
 		return
 	}
 
-	if p.IsExists() {
-		if !p.IsRegular() || !isPathWriteable(p) {
-			i.setErr(store.NewAccessDeniedError(
-				"cannot create file as its no regular file or not writeable: " + p.Path()))
+	if s.IsExists() {
+		if !s.IsRegular() || !isPathWriteable(s) {
+			i.setErr(store.NewAccessDeniedError(fmt.Sprintf(
+				"path '%s' with mode %s denotes no regular file or no writeable directory",
+				s.Path(), s.FileMode())))
 		}
 	} else {
-		var d = p.Dir()
+		var d = s.Dir()
 		if !isPathWriteable(d) {
 			i.setErr(store.NewAccessDeniedError(
-				"cannot create file as parent directory is not writeable: " + p.Path()))
+				"parent directory of '" + s.Path() + "' is not writeable"))
 		}
 	}
 }
@@ -84,7 +89,7 @@ func (i *pathIO) assertPathValidForWriteAccess(p gopath.GoPath) {
 // User-specific access permissions are NOT regarded here.
 func (i *pathIO) assertPathValidForAnyAccess(p gopath.GoPath) {
 	if p.HasErr() {
-		i.setErr(p.Err())
+		i.syncedErrs(p)
 	} else {
 		i.assertFileIsNotHidden(p)
 		i.assertPathInsideContentRoot(p)
@@ -95,13 +100,18 @@ func (i *pathIO) assertFileIsNotHidden(p gopath.GoPath) {
 	if i.hasErr() {
 		return
 	}
+	if p.HasErr() {
+		i.syncedErrs(p)
+		return
+	}
 
 	if strings.HasPrefix(p.Base(), ".") {
 		i.setErr(store.NewPathNotFoundError(fmt.Sprintf("%s is a hidden file and may not be displayed", p)))
 	}
 
+	// HINT: recursive call, ending at content root
 	if i.isPathInsideContentRoot(p) {
-		i.assertFileIsNotHidden(p.Dir())
+		i.assertFileIsNotHidden(p.ToSlash().Dir())
 	}
 }
 
@@ -140,7 +150,7 @@ func (i *pathIO) pathFromRequest(request *http.Request) gopath.GoPath {
 		return i.indexForDirectory(p)
 	}
 
-	return i.syncedErrs(p)
+	return i.syncedErrs(p.PrependErr("couldn't retrieve path from request"))
 }
 
 // indexForDirectory finds the index document inside the given directory.
@@ -162,7 +172,7 @@ func (i *pathIO) indexForDirectory(dir gopath.GoPath) gopath.GoPath {
 // Otherwise, it looks for all files in the directory beginning with the
 // filename and a dot ("."), and returns the first match in alphabetic order.
 func (i *pathIO) guessExtension(p gopath.GoPath) gopath.GoPath {
-	var match = p.Append(".*").GlobAny()
+	var match = p.Append(".*").GlobAny().PrependErr("couldn't guess extension")
 	if match.Path() != "" {
 		return i.syncedErrs(match)
 	}

@@ -8,9 +8,10 @@
 			"revisionTime": "2015-09-23T00:49:25+01:00"
 		},
 		{
+			"checksumSHA1": "HOGDSFpgorzu0kszvjCmjuJ1pcA=",
 			"path": "github.com/fxnn/gopath",
-			"revision": "2aab61894866c9a77d6263c173c313441819c4a8",
-			"revisionTime": "2015-12-31T02:55:38+01:00"
+			"revision": "83d01dcb362975d9965916071d496294b32cf0f5",
+			"revisionTime": "2016-08-28T16:11:04Z"
 		},
 		{
 			"path": "github.com/gorilla/context",
@@ -62,5 +63,6 @@
 			"revision": "8611c35ab31c1c28aa903d33cf8b6e44a399b09e",
 			"revisionTime": "2016-01-10T16:04:37+01:00"
 		}
-	]
+	],
+	"rootPath": "github.com/fxnn/gone"
 }

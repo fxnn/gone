@@ -183,3 +183,14 @@ func (g GoPath) RelTo(base GoPath) GoPath {
 
 	return base.Rel(g)
 }
+
+// ToSlash returns the result of replacing each separator character in this
+// GoPath's path with a slash ('/') character.
+// This is done simply by invoking filepath's ToSlash(string) func.
+func (g GoPath) ToSlash() GoPath {
+	if g.HasErr() {
+		return g
+	}
+
+	return g.withPath(filepath.ToSlash(g.Path()))
+}
