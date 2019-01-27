@@ -142,7 +142,7 @@ See `gone -help` for more information.
 ## Future
 
 Some day, Gone might be
-* extensible. Plugin in version control, renderers, compilers or anything you like. #29
+* extensible. Plugin in version control, renderers, compilers or anything you like, cf. https://github.com/fxnn/gone/issues/29
 * granting file access on a group level, using a `htgroup` file.
 * searchable in full text.
 
